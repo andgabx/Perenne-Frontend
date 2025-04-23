@@ -1,5 +1,7 @@
 # Projeto Perenne - Frontend (EM DESENVOLVIMENTO)
 
+##Ver também: [Perenne-Backend](https://github.com/filipe-ms/Perenne-Backend)
+
 ## Sobre o Projeto
 
 Este repositório contém o código fonte do frontend do Projeto Perenne. O projeto é desenvolvido pelo grupo Perenne e essa aplicação web se comunicará com uma API desenvolvida em C#/.NET.

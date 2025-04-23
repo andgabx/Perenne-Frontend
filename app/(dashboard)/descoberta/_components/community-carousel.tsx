@@ -7,12 +7,12 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 
-const EventsCarousel = () => {
+const CommunitiesCarousel = () => {
     return (
         <div className="mx-auto max-w-[75vw]">
-            <p className="text-2xl font-bold py-4">ÚLTIMOS EVENTOS</p>
-            <Carousel className="w-full ">
-                <CarouselContent> {/* Dar map nos eventos no backend */}
+            <p className="text-2xl font-bold py-4">COMUNIDADES</p>
+            <Carousel className="w-full max-h-[50vh]">
+                <CarouselContent> {/* Dar map nas comunidades no backend */}
                     {Array.from({ length: 10 }).map((_, index) => (
                         <CarouselItem key={index} className="md:basis-1/5">
                             <Card>
@@ -32,4 +32,4 @@ const EventsCarousel = () => {
     );
 };
 
-export default EventsCarousel;
+export default CommunitiesCarousel;

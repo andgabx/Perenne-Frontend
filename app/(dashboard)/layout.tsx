@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <div className="flex flex-1 overflow-hidden">
                     <AppSidebar />
                     <SidebarInset>
-                        <div className="flex flex-col gap-4 p-4 h-full overflow-auto">
+                        <div className="flex flex-col gap-4 h-full overflow-auto">
                             {children}
                         </div>
                     </SidebarInset>
