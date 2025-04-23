@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Projeto Perenne - Frontend (EM DESENVOLVIMENTO)
 
-## Getting Started
+## Sobre o Projeto
 
-First, run the development server:
+Este repositório contém o código fonte do frontend do Projeto Perenne. O projeto é desenvolvido pelo grupo Perenne e essa aplicação web se comunicará com uma API desenvolvida em C#/.NET.
+
+## Tecnologias Utilizadas
+
+-   **React** - Biblioteca JavaScript para construção de interfaces de usuário
+-   **TypeScript** - Superset JavaScript com tipagem estática
+-   **Vite** - Build tool e bundler para desenvolvimento rápido
+-   **Tailwind CSS** - Framework CSS para estilização
+-   **Next Fetch API** - Cliente HTTP para requisições à API
+-   **React Router** - Gerenciamento de rotas
+-   **React Query** - Gerenciamento de estado e cache de dados
+-   **ESLint** - Linter para garantir qualidade de código
+-   **Prettier** - Formatador de código
+
+## Integração com a API
+
+O frontend se comunica com uma API desenvolvida em C#/.NET, localizada em um repositório separado. As principais características da integração incluem:
+
+-   Autenticação e autorização
+-   CRUD de entidades principais
+-   Gerenciamento de estado
+-   Tratamento de erros
+-   Cache de dados
+
+## Configuração do Ambiente Frontend
+
+### Pré-requisitos
+
+-   Node.js (versão 18 ou superior)
+-   npm ou yarn
+
+### Instalação
+
+1. Clone o repositório:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/andgabx/perenne-frontend.git
+cd perenne-frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Instale as dependências:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+# ou
+yarn install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Para inicializar o servidor
 
-## Learn More
+-   `npm run dev` - Inicia o servidor de desenvolvimento
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 👥 Equipe Perenne
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+-   [Débora](https://github.com/DeboraCASouza/)
+-   [Yuri](https://github.com/yuricavalcanti06/)
+-   [Gabriel](https://github.com/andgabx/)
+-   [Rafael](https://github.com/rafael-zzz/)
+-   [Raphael](https://github.com/rafatito03/)
+-   [Marcelo](https://github.com/marceloh090/)
