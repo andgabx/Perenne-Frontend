@@ -9,6 +9,7 @@ import {
     LifeBuoy,
     Map,
     PieChart,
+    Plus,
     Send,
     Settings2,
     SquareTerminal,
@@ -32,100 +33,55 @@ import Link from "next/link";
 
 const data = {
     user: {
-        name: "shadcn",
-        email: "m@example.com",
+        name: "Usuario",
+        email: "usuario@example.com",
         avatar: "/avatars/shadcn.jpg",
     },
     navMain: [
         {
-            title: "Playground",
+            title: "Comunidade",
             url: "#",
             icon: SquareTerminal,
             isActive: true,
             items: [
                 {
-                    title: "History",
+                    title: "Comunidade 1",
                     url: "#",
                 },
                 {
-                    title: "Starred",
+                    title: "Comunidade 2",
                     url: "#",
                 },
                 {
-                    title: "Settings",
+                    title: "Comunidade 3",
                     url: "#",
                 },
             ],
         },
         {
-            title: "Models",
+            title: "Projetos",
             url: "#",
             icon: Bot,
             items: [
                 {
-                    title: "Genesis",
+                    title: "Projeto 1",
                     url: "#",
                 },
                 {
-                    title: "Explorer",
+                    title: "Projeto 2",
                     url: "#",
                 },
                 {
-                    title: "Quantum",
+                    title: "Projeto 3",
                     url: "#",
                 },
             ],
         },
-        {
-            title: "Documentation",
-            url: "#",
-            icon: BookOpen,
-            items: [
-                {
-                    title: "Introduction",
-                    url: "#",
-                },
-                {
-                    title: "Get Started",
-                    url: "#",
-                },
-                {
-                    title: "Tutorials",
-                    url: "#",
-                },
-                {
-                    title: "Changelog",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Settings",
-            url: "#",
-            icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: "#",
-                },
-                {
-                    title: "Team",
-                    url: "#",
-                },
-                {
-                    title: "Billing",
-                    url: "#",
-                },
-                {
-                    title: "Limits",
-                    url: "#",
-                },
-            ],
-        },
+        
     ],
     navSecondary: [
         {
-            title: "Support",
+            title: "Ajuda",
             url: "#",
             icon: LifeBuoy,
         },
@@ -146,11 +102,7 @@ const data = {
             url: "#",
             icon: PieChart,
         },
-        {
-            name: "Travel",
-            url: "#",
-            icon: Map,
-        },
+        
     ],
 };
 
@@ -166,14 +118,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="#">
                                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                                    <Command className="size-4" />
+                                    <Plus className="size-4" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-medium">
-                                        Acme Inc
-                                    </span>
-                                    <span className="truncate text-xs">
-                                        Enterprise
+                                        Criar
                                     </span>
                                 </div>
                             </Link>
