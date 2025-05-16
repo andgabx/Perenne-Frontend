@@ -1,12 +1,12 @@
 import { AuthToken, User } from "@/app/types/next-auth";
-import NextAuth from "next-auth";
+import NextAuth, { Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 const API_URL = "http://localhost:5124";
 const EXPIRATION_TOKEN_TIME = 60 * 60 * 24;
 
 export default NextAuth({
-
     // peixoto, como sao dois endpoints que a gente tem que usar, temos que fazer duas requisicoes diferentes
     // a primeira vai usar o endpoint de api/user/login pra retornar o body que vai conter o email e o id do user
     // a gente pega o id do user e o email e passa em outro body para a requisicao do endpoint /token
@@ -16,7 +16,7 @@ export default NextAuth({
         CredentialsProvider({
             name: "Credentials",
             credentials: {
-                username: {
+                email: {
                     label: "email",
                     type: "text",
                     placeholder: "seu email",
@@ -27,9 +27,8 @@ export default NextAuth({
                     placeholder: "sua senha",
                 },
             },
-            async authorize(credentials): Promise <User | null> {
-
-                if (!credentials?.username || credentials?.password) {
+            async authorize(credentials): Promise<User | null> {
+                if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
 
@@ -42,7 +41,7 @@ export default NextAuth({
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                            username: credentials?.username,
+                            email: credentials?.email,
                             password: credentials?.password,
                         }),
                     });
@@ -78,37 +77,67 @@ export default NextAuth({
                         );
                     }
 
-                    const token: AuthToken = await tokenRes.json(); 
+                    const token: AuthToken = await tokenRes.json();
 
                     return {
                         ...userData,
                         accessToken: token,
                         expires: Date.now() + EXPIRATION_TOKEN_TIME,
-                    } as User; 
+                    } as User;
 
-                    // nesse return eu dei spread em todo o corpo da primeira response, assim como o o token que vem na 2a, e o tempo de expiracao 
+                    // nesse return eu dei spread em todo o corpo da primeira response, assim como o o token que vem na 2a, e o tempo de expiracao
                     // tu manipula la na constante que criei no topo do codigo
-
                 } catch (error) {
                     console.log(error);
-                    return null
+                    return null;
                 }
             },
         }),
     ],
 
     callbacks: {
-
-        async jwt({ token, user, account }) {
+        async jwt({ token, user }): Promise<JWT> {
+            // Se for o primeiro login, adiciona os dados do usuário ao token
             if (user) {
-
-            return { ...token, ...user };
-
+                return {
+                    ...token,
+                    ...user,
+                    accessToken: user.accessToken as AuthToken,
+                    expiresIn: user.expiresIn as number,
+                };
             }
+
+            // Se o token ainda não expirou, retorna ele mesmo
+            if (Date.now() < (token.expiresIn as number)) {
+                return token;
+            }
+
+            // Se chegou aqui, o token expirou - podemos implementar refresh token aqui se necessário
+            return { ...token, error: "TokenExpiredError" };
         },
+
         async session({ session, token }) {
-            session.user = token as any;
-            return session;
+            return {
+                ...session,
+                user: {
+                    ...session.user,
+                    id: token.id,
+                    accessToken: token.accessToken,
+                },
+                expires: new Date(token.expiresIn).toISOString(),
+            };
         },
     },
+    pages: {
+        signIn: "/login",
+        error: "/api/auth/error",
+        signOut: "/login",
+        newUser: "/register",
+        verifyRequest: "/verify-request",
+    },
+    session: {
+        strategy: "jwt",
+        maxAge: EXPIRATION_TOKEN_TIME,
+    },
+    secret: process.env.NEXTAUTH_SECRET,
 });

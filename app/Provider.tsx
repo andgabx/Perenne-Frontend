@@ -1,18 +1,15 @@
-"use client";
+// app/providers.tsx
+'use client';
 
-import { SessionProvider } from "next-auth/react";
-import React, { ReactNode } from "react";
+import { SessionProvider } from 'next-auth/react';
 
-interface ProviderProps {
-    children: ReactNode;
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <SessionProvider
+      refetchInterval={60 * 60} // Revalida a cada 1h
+      refetchOnWindowFocus={false}
+    >
+      {children}
+    </SessionProvider>
+  );
 }
-
-const Provider = ({ children }: ProviderProps) => {
-    return (
-        <SessionProvider>
-            {children}
-        </SessionProvider>
-    );
-};
-
-export default Provider;

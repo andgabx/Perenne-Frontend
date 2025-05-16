@@ -24,43 +24,43 @@ export function SiteHeader() {
     >("connecting");
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const newConnection = new HubConnectionBuilder()
-            .withUrl("http://181.221.114.217:5000/chatHub")
-            .configureLogging(LogLevel.Information)
-            .build();
+    // useEffect(() => {
+    //     const newConnection = new HubConnectionBuilder()
+    //         .withUrl("http://181.221.114.217:5000/chatHub")
+    //         .configureLogging(LogLevel.Information)
+    //         .build();
 
-        setConnection(newConnection);
-        setConnectionStatus("connecting");
+    //     setConnection(newConnection);
+    //     setConnectionStatus("connecting");
 
-        newConnection
-            .start()
-            .then(() => {
-                console.log("Conectado ao hub.");
-                setConnectionStatus("connected");
-                setError(null);
-            })
-            .catch((err: Error) => {
-                console.error("Erro ao conectar: " + err.toString());
-                setConnectionStatus("disconnected");
-                setError(
-                    "Não foi possível conectar ao servidor de chat. Por favor, tente novamente mais tarde."
-                );
-            });
+    //     newConnection
+    //         .start()
+    //         .then(() => {
+    //             console.log("Conectado ao hub.");
+    //             setConnectionStatus("connected");
+    //             setError(null);
+    //         })
+    //         .catch((err: Error) => {
+    //             console.error("Erro ao conectar: " + err.toString());
+    //             setConnectionStatus("disconnected");
+    //             setError(
+    //                 "Não foi possível conectar ao servidor de chat. Por favor, tente novamente mais tarde."
+    //             );
+    //         });
 
-        newConnection.on("ReceiveMessage", (message: string) => {
-            setMessages((prev) => [...prev, message]);
-        });
+    //     newConnection.on("ReceiveMessage", (message: string) => {
+    //         setMessages((prev) => [...prev, message]);
+    //     });
 
-        newConnection.onclose(() => {
-            setConnectionStatus("disconnected");
-            setError("Conexão perdida. Tentando reconectar...");
-        });
+    //     newConnection.onclose(() => {
+    //         setConnectionStatus("disconnected");
+    //         setError("Conexão perdida. Tentando reconectar...");
+    //     });
 
-        return () => {
-            newConnection.stop();
-        };
-    }, []);
+    //     return () => {
+    //         newConnection.stop();
+    //     };
+    // }, []);
 
     const sendMessage = async () => {
         if (messageInput && connection) {

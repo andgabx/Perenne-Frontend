@@ -5,24 +5,28 @@ import { SiteHeader } from "@/components/sidebar/site-header";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { ReactNode } from "react";
-import Provider from "../Provider";
+import { SessionProvider } from "next-auth/react";
 
-export default function Layout({ children }: { children: ReactNode }) {
+interface LayoutProps {
+    children: ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
     return (
-        <Provider>
-                <div className="flex flex-col h-screen">
-                    <SidebarProvider className="flex flex-col h-full">
-                        <SiteHeader />
-                        <div className="flex flex-1 overflow-hidden">
-                            <AppSidebar />
-                            <SidebarInset>
-                                <div className="flex flex-col gap-4 h-full overflow-auto">
-                                    {children}
-                                </div>
-                            </SidebarInset>
-                        </div>
-                    </SidebarProvider>
-                </div>
-        </Provider>
+        <SessionProvider>
+            <div className="flex flex-col h-screen">
+                <SidebarProvider className="flex flex-col h-full">
+                    <SiteHeader />
+                    <div className="flex flex-1 overflow-hidden">
+                        <AppSidebar />
+                        <SidebarInset>
+                            <div className="flex flex-col gap-4 h-full overflow-auto">
+                                {children}
+                            </div>
+                        </SidebarInset>
+                    </div>
+                </SidebarProvider>
+            </div>
+        </SessionProvider>
     );
 }
