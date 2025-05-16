@@ -149,7 +149,7 @@ export default function TestJWTPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-blue-50 p-3 rounded">
+            <div className="bg-card p-3 rounded">
               <p>
                 <strong>Status:</strong> Autenticado
               </p>
@@ -184,7 +184,7 @@ export default function TestJWTPage() {
 
             <div className="mt-4">
               <h3 className="font-semibold mb-2">Resultados dos Testes</h3>
-              <div className="bg-gray-100 p-3 rounded whitespace-pre-wrap">
+              <div className="bg-card p-3 rounded whitespace-pre-wrap">
                 {testApiResponse || "Nenhuma chamada API realizada ainda"}
               </div>
             </div>
