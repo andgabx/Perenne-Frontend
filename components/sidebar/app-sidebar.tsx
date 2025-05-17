@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ThemeSwitcher } from "@/components/theme-switch";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 const data = {
     user: {
@@ -107,6 +108,9 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+    const { data: session } = useSession();
+    
     return (
         <Sidebar
             className="h-[calc(100vh-var(--header-height))] sticky top-[var(--header-height)]"
@@ -136,7 +140,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <NavSecondary items={data.navSecondary} className="mt-auto" />
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={data.user} />
+                <NavUser session={session} />
             </SidebarFooter>
         </Sidebar>
     );
