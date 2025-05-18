@@ -4,10 +4,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 const API_URL = "http://localhost:5181"; 
 const EXPIRATION_TOKEN_TIME = 60 * 60 * 2 * 1000; // 2 horas
 
-type FetchOptions = RequestInit & {
-    headers?: Record<string, string>;
-};
-
 interface Token {
   id: string;
   email: string;
@@ -16,18 +12,6 @@ interface Token {
   error?: string;
 }
 
-const api = {
-    async fetch(url: string, options: FetchOptions = {}) {
-        const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
-        return fetch(fullUrl, {
-            ...options,
-            headers: {
-                "Content-Type": "application/json",
-                ...(options.headers || {}),
-            },
-        });
-    }
-};
 
 async function refreshAccessToken(token: Token) {
   try {
