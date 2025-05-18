@@ -1,16 +1,68 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import axios from "axios";
 
-const API_URL = "http://127.0.0.1:5124"; 
-const EXPIRATION_TOKEN_TIME = 60 * 60 * 24 * 1000;
+const API_URL = "http://localhost:5181"; 
+const EXPIRATION_TOKEN_TIME = 60 * 60 * 2 * 1000; // 2 horas
 
-const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
+type FetchOptions = RequestInit & {
+    headers?: Record<string, string>;
+};
+
+interface Token {
+  id: string;
+  email: string;
+  accessToken?: string;
+  expiresIn?: number;
+  error?: string;
+}
+
+const api = {
+    async fetch(url: string, options: FetchOptions = {}) {
+        const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+        return fetch(fullUrl, {
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                ...(options.headers || {}),
+            },
+        });
+    }
+};
+
+async function refreshAccessToken(token: Token) {
+  try {
+    // Request a new token using userId and email
+    const tokenRes = await fetch(`${API_URL}/api/identity/generatetoken`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: token.id,
+        email: token.email
+      })
+    });
+    
+    console.log('Resposta do refresh token:', await tokenRes.clone().text());
+    
+    if (!tokenRes.ok) throw new Error('Falha ao renovar o token');
+    
+    const newToken = await tokenRes.text();
+    console.log('Novo JWT Token:', newToken);
+    
+    return {
+      ...token,
+      accessToken: newToken,
+      expiresIn: Date.now() + EXPIRATION_TOKEN_TIME // 2h
+    };
+  } catch (error) {
+    console.error("Erro ao atualizar token:", error);
+    
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
+  }
+}
+
 
 export default NextAuth(
     
@@ -48,7 +100,7 @@ export default NextAuth(
                   console.log('Dados do usuário:', userData);
               
                   // 2. Token
-                  const tokenRes = await fetch(`${API_URL}/token`, {
+                  const tokenRes = await fetch(`${API_URL}/api/identity/generatetoken`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -70,10 +122,10 @@ export default NextAuth(
                     email: userData.email,
                     name: `${userData.firstName} ${userData.lastName}`,
                     accessToken: token,
-                    expiresIn: Date.now() + (24 * 60 * 60 * 1000) // 24h
+                    expiresIn: Date.now() + EXPIRATION_TOKEN_TIME // 2h
                   };
 
-               // nesse return eu dei spread em todo o corpo da primeira response, assim como o o token que vem na 2a, e o tempo de expiracao 
+                // nesse return eu dei spread em todo o corpo da primeira response, assim como o o token que vem na 2a, e o tempo de expiracao 
                 // tu manipula la na constante que criei no topo do codigo
 
                 } catch (error) {
@@ -87,7 +139,6 @@ export default NextAuth(
     callbacks: {
         async jwt({ token, user }) {
             try {
-
                 if (user) {
                     return {
                         ...token,
@@ -99,8 +150,16 @@ export default NextAuth(
                     };
                 }
 
-                if (Date.now() > (token.expiresIn as number)) {
-                    throw new Error("Token expirado");
+                // Se o token estiver expirado ou a menos de 5 minutos de expirar, atualiza-o
+                const expirationThreshold = 5 * 60 * 1000; // 5 minutos em milissegundos
+                if (Date.now() > ((token.expiresIn as number) - expirationThreshold)) {
+                    console.log("Token próximo da expiração, renovando...");
+                    // Verificando se token tem email antes de fazer refresh
+                    if (token.email) {
+                        return refreshAccessToken(token as Token);
+                    }
+                    console.log("Token não tem email válido para renovação");
+                    return token;
                 }
 
                 return token;
