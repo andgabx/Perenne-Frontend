@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { API_URL } from "@/pages/api/auth/[...nextauth]";
 
 interface Post {
     id: string;
@@ -24,7 +23,7 @@ export default function GetLastPosts() {
         if (!feedId) return;
         setLoading(true);
         setError(false);
-        fetch(`${API_URL}/api/feed/${feedId}/GetLast10Posts`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/feed/${feedId}/GetLast10Posts`)
             .then((res) => {
                 if (!res.ok) throw new Error("Erro ao buscar posts");
                 return res.json();

@@ -1,6 +1,5 @@
 // app/api/users.ts
 import { User, userSchema } from '@/lib/schemas/user'; // Import the User type and schema
-import { API_URL } from '@/pages/api/auth/[...nextauth]';
 
 const USERS_ENDPOINT = "/api/users"
 
@@ -10,7 +9,7 @@ export async function createUser(userData: User) {
 
     userSchema.parse(userData);
 
-    const response = await fetch(`${API_URL}${USERS_ENDPOINT}`, { // Assuming you have a /api/users endpoint
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${USERS_ENDPOINT}`, { // Assuming you have a /api/users endpoint
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

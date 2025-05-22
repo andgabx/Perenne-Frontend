@@ -1,4 +1,3 @@
-import { API_URL } from "@/pages/api/auth/[...nextauth]";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
@@ -18,7 +17,7 @@ function PostForm({ groupId }: { groupId: string }) {
         setError(null);
 
         try {
-            const res = await fetch(`${API_URL}/api/feed/${groupId}/post`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/feed/${groupId}/post`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -18,7 +18,6 @@ import { ThemeSwitcher } from "@/components/theme-switch";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { API_URL } from "@/pages/api/auth/[...nextauth]";
 import { useEffect, useState } from "react";
 import {
     Plus,
@@ -48,7 +47,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         const groupsByUserId = async () => {
             if (!session?.user?.accessToken) return;
             try {
-                const response = await fetch(`${API_URL}/api/user/getgroups`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/getgroups`, {
                     headers: {
                         Authorization: `Bearer ${session.user.accessToken}`,
                     },

@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import authOptions, { API_URL } from "@/pages/api/auth/[...nextauth]"; // Assumindo que authOptions está aqui
+import authOptions from "@/pages/api/auth/[...nextauth]"; // Assumindo que authOptions está aqui
 import { Session } from "next-auth";
 
 // Remova o import de groupSchema e z aqui. A validação deve ser feita no Client Component
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         const { name, description } = groupData;
 
         // Chame seu backend C#
-        const response = await fetch(`${API_URL}/api/group/create`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/group/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

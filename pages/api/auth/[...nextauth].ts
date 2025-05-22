@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-export const API_URL = "http://181.221.115.64:5000"; 
 const EXPIRATION_TOKEN_TIME = 60 * 60 * 2 * 1000; // 2 horas
 
 interface Token {
@@ -16,7 +15,7 @@ interface Token {
 async function refreshAccessToken(token: Token) {
   try {
     // Request a new token using userId and email
-    const tokenRes = await fetch(`${API_URL}/api/identity/generatetoken`, {
+    const tokenRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/identity/generatetoken`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -73,7 +72,7 @@ export default NextAuth(
                 
                 try {
                   // 1. Login
-                  const loginRes = await fetch(`${API_URL}/api/user/login`, {
+                  const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(credentials)
@@ -86,7 +85,7 @@ export default NextAuth(
                   console.log('Dados do usuário:', userData);
               
                   // 2. Token
-                  const tokenRes = await fetch(`${API_URL}/api/identity/generatetoken`, {
+                  const tokenRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/identity/generatetoken`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

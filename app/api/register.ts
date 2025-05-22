@@ -1,7 +1,6 @@
 // app/api/users.ts
 import { RegisterSchema } from '@/lib/schemas/register';
 import { User, userSchema } from '@/lib/schemas/user'; // Import the User type and schema
-import { API_URL } from '@/pages/api/auth/[...nextauth]';
 
 const REGISTER_ENDPOINT = "/api/users/create"
 
@@ -9,7 +8,7 @@ const REGISTER_ENDPOINT = "/api/users/create"
 export async function createUser(userData: User) {
   try {
 
-    const response = await fetch(`${API_URL}${REGISTER_ENDPOINT}`, { // Assuming you have a /api/users endpoint
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${REGISTER_ENDPOINT}`, { // Assuming you have a /api/users endpoint
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

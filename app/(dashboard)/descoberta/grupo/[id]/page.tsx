@@ -7,7 +7,6 @@ import {
     CardHeader,
     CardDescription,
 } from "@/components/ui/card";
-import { API_URL } from "@/pages/api/auth/[...nextauth]";
 import { useParams } from "next/navigation";
 import GetLastPosts from "./getlastposts";
 import PostForm from "./formpost";
@@ -39,7 +38,7 @@ const Grupo = () => {
         setLoading(true);
         setErro(false);
 
-        fetch(`${API_URL}/api/group/${id}`, { method: "GET" })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/group/${id}`, { method: "GET" })
             .then((res) => {
                 if (!res.ok) throw new Error("Erro ao buscar grupo");
                 return res.json();
@@ -81,7 +80,7 @@ const Grupo = () => {
                 </>
             )}
             <GetLastPosts />
-            <PostForm groupId=""/>
+            <PostForm groupId={id as string} />
         </div>
     );
 };

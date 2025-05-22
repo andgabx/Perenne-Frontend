@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { API_URL } from "@/pages/api/auth/[...nextauth]";
 import { useSession } from "next-auth/react";
 import * as signalR from "@microsoft/signalr"; // Importa SignalR
 
@@ -46,7 +45,7 @@ const GroupPage = () => {
             return;
         }
         try {
-            const response = await fetch(`${API_URL}/api/user/getgroups`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/getgroups`, {
                 headers: {
                     Authorization: `Bearer ${session.user.accessToken}`,
                 },
@@ -70,12 +69,12 @@ const GroupPage = () => {
     // Efeito para chamar fetchMyGroups na montagem e quando a sessão mudar
     useEffect(() => {
         fetchMyGroups();
-    }, [session, status, API_URL]); // Dependências: re-executa se a sessão, status ou API_URL mudar
+    }, [session, status, process.env.NEXT_PUBLIC_API_URL]); // Dependências: re-executa se a sessão, status ou API_URL mudar
 
     // Função para buscar todos os grupos disponíveis
     const fetchAllGroups = async (accessToken: string) => {
         try {
-            const response = await fetch(`${API_URL}/api/group/getall`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/group/getall`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -100,7 +99,7 @@ const GroupPage = () => {
         if (session?.user?.accessToken) {
             fetchAllGroups(session.user.accessToken);
         }
-    }, [API_URL, session, status]); 
+    }, [process.env.NEXT_PUBLIC_API_URL, session, status]); 
 
     // Efeito para gerenciar a conexão SignalR
     useEffect(() => {
@@ -127,7 +126,7 @@ const GroupPage = () => {
 
         // Constrói a conexão SignalR
         const newConnection = new signalR.HubConnectionBuilder()
-            .withUrl(`${API_URL}/chathub`, {
+            .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/chathub`, {
                 accessTokenFactory: () => session.user.accessToken!, // Garante que o token seja uma string
             })
             .withAutomaticReconnect() // Tenta reconectar automaticamente
@@ -196,14 +195,14 @@ const GroupPage = () => {
                 console.log("SignalR Connection stopped.");
             }
         };
-    }, [status, session, API_URL, currentChannelId]); // Adicionado currentChannelId às dependências para tentar re-join
+    }, [status, session, process.env.NEXT_PUBLIC_API_URL, currentChannelId]); // Adicionado currentChannelId às dependências para tentar re-join
 
     // Função para lidar com a criação de um novo grupo (via REST API)
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
-            const response = await fetch(`${API_URL}/api/group/create`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/group/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -243,7 +242,7 @@ const GroupPage = () => {
         try {
             // Tenta entrar no grupo via REST API (para registrar a associação do usuário ao grupo)
             const response = await fetch(
-                `${API_URL}/api/group/${groupId}/join`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/group/${groupId}/join`,
                 {
                     method: "POST",
                     headers: {
