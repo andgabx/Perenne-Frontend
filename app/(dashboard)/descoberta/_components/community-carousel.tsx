@@ -6,11 +6,16 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
+import Link from "next/link";
 
 const CommunitiesCarousel = () => {
     return (
         <div className="mx-auto max-w-[75vw]">
-            <p className="text-2xl font-bold py-4">COMUNIDADES</p>
+            <Link href="/descoberta/grupo">
+                <p className="text-2xl font-bold py-4 hover:underline">
+                    COMUNIDADES
+                </p>
+            </Link>
             <Carousel className="w-full max-h-[50vh]">
                 <CarouselContent> {/* Dar map nas comunidades no backend */}
                     {Array.from({ length: 10 }).map((_, index) => (

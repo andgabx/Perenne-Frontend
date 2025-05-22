@@ -32,38 +32,9 @@ const GroupPage = () => {
     ); // Estado para o ID do canal de chat ativo
     const router = useRouter();
 
-    // Função para testar a conexão com a API
-    const handlePing = async () => {
-        if (status !== "authenticated" || !session?.user?.accessToken) {
-            alert("Você precisa estar logado para testar a conexão");
-            return;
-        }
-
-        try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/user/ping`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${session.user.accessToken}`,
-                        "ngrok-skip-browser-warning": "69420",
-                    },
-                }
-            );
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                alert(`Erro na conexão: ${errorText}`);
-                return;
-            }
-
-            const data = await response.text();
-            alert(`Resposta do servidor: ${data}`);
-        } catch (error) {
-            console.error("Erro ao fazer ping:", error);
-            alert("Erro ao conectar com o servidor");
-        }
-    };
+    if (!session) {
+        router.push("/login");
+    }
 
     // Ref para a conexão SignalR para que ela persista entre as renderizações
     const connectionRef = useRef<signalR.HubConnection | null>(null);
@@ -399,15 +370,7 @@ const GroupPage = () => {
 
     return (
         <div className="p-4 space-y-8 max-w-2xl mx-auto">
-            {/* Botão de Teste de Conexão */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <Button
-                    onClick={handlePing}
-                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out"
-                >
-                    Testar Conexão com API
-                </Button>
-            </div>
+
 
             {/* Formulário para Criar Grupo */}
             <form

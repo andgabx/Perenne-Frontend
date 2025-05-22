@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-
+import { toast } from "react-hot-toast";
 interface StepTwoProps {
     initialData: {
         CPF: string;
@@ -13,7 +13,8 @@ interface StepTwoProps {
         password: string;
         confirmPassword: string;
         acceptTerms: boolean;
-
+        nome: string;
+        sobrenome: string;
     };
     onBack: () => void;
     onSubmit: (data: {
@@ -22,6 +23,8 @@ interface StepTwoProps {
         password: string;
         confirmPassword: string;
         acceptTerms: boolean;
+        nome: string;
+        sobrenome: string;
     }) => void;
 }
 
@@ -46,6 +49,8 @@ export default function StepTwo({
         confirmPassword: "",
         acceptTerms: "",
     });
+    const [nome] = useState(initialData.nome);
+    const [sobrenome] = useState(initialData.sobrenome);
 
     const validate = () => {
         const newErrors = {
@@ -91,42 +96,49 @@ export default function StepTwo({
         return isValid;
     };
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (validate()) {
-            onSubmit({ CPF, email, password, confirmPassword, acceptTerms });
+        if (!validate()) return;
+
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/user/create`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    Email: email,
+                    Password: password,
+                    FirstName: nome,
+                    LastName: sobrenome,
+                    CPF,
+                }),
+
+            }
+        );
+
+        if (response.ok) {
+            onSubmit({
+                CPF,
+                email,
+                password,
+                confirmPassword,
+                acceptTerms,
+                nome,
+                sobrenome,
+            });
+            toast.success("Conta criada com sucesso!");
+        } else {
+            toast.error("Erro ao criar conta!");
         }
     };
 
     return (
-        <div className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="mb-4">
-                    <button
-                        type="button"
-                        onClick={onBack}
-                        className="text-[#2e7d32] hover:bg-green-50 p-1 rounded-full transition-colors"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 8 8 12 12 16"></polyline>
-                            <line x1="16" y1="12" x2="8" y2="12"></line>
-                        </svg>
-                    </button>
-                </div>
-
+        <div className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-7">
                 <div>
-                    <input
+                    <Input
                         type="text"
                         value={CPF}
                         onChange={(e) =>
@@ -134,8 +146,8 @@ export default function StepTwo({
                         }
                         placeholder="CPF"
                         maxLength={11}
-                        className={`w-full p-3 rounded-md bg-[#FFE29D] bg-opacity-20 border-2 border-[#FFE29D] placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] ${
-                            errors.CPF ? "border-red-500" : ""
+                        className={`w-full p-4 rounded-xl bg-[#FFE29D] border-none placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] text-lg ${
+                            errors.CPF ? "ring-2 ring-red-500" : ""
                         }`}
                     />
                     {errors.CPF && (
@@ -151,8 +163,8 @@ export default function StepTwo({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="E-mail"
-                        className={`w-full p-3 rounded-md bg-[#FFE29D] bg-opacity-20 border-2 border-[#FFE29D] placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] ${
-                            errors.email ? "border-red-500" : ""
+                        className={`w-full p-4 rounded-xl bg-[#FFE29D] border-none placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] text-lg ${
+                            errors.email ? "ring-2 ring-red-500" : ""
                         }`}
                     />
                     {errors.email && (
@@ -168,20 +180,21 @@ export default function StepTwo({
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Nova senha"
-                        className={`w-full p-3 rounded-md bg-[#FFE29D] bg-opacity-20 border-2 border-[#FFE29D] placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] ${
-                            errors.password ? "border-red-500" : ""
+                        className={`w-full p-4 rounded-xl bg-[#FFE29D] border-none placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] text-lg pr-12 ${
+                            errors.password ? "ring-2 ring-red-500" : ""
                         }`}
                     />
                     <Button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 bg-transparent shadow-none hover:bg-transparent p-0"
+                        tabIndex={-1}
                     >
                         {showPassword ? (
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
+                                width="24"
+                                height="24"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -195,8 +208,8 @@ export default function StepTwo({
                         ) : (
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
+                                width="24"
+                                height="24"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -217,13 +230,13 @@ export default function StepTwo({
                 </div>
 
                 <div className="relative">
-                    <input
+                    <Input
                         type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirmar senha"
-                        className={`w-full p-3 rounded-md bg-[#FFE29D] bg-opacity-20 border-2 border-[#FFE29D] placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] ${
-                            errors.confirmPassword ? "border-red-500" : ""
+                        className={`w-full p-4 rounded-xl bg-[#FFE29D] border-none placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] text-lg pr-12 ${
+                            errors.confirmPassword ? "ring-2 ring-red-500" : ""
                         }`}
                     />
                     <Button
@@ -231,13 +244,14 @@ export default function StepTwo({
                         onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 bg-transparent shadow-none hover:bg-transparent p-0"
+                        tabIndex={-1}
                     >
                         {showConfirmPassword ? (
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
+                                width="24"
+                                height="24"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -251,8 +265,8 @@ export default function StepTwo({
                         ) : (
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
+                                width="24"
+                                height="24"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -272,31 +286,33 @@ export default function StepTwo({
                     )}
                 </div>
 
-                <div className="flex items-start mt-4">
+                <div className="flex items-center gap-3 mt-2 mb-2">
                     <Checkbox
                         id="termos"
                         checked={acceptTerms}
                         onCheckedChange={(checked) =>
                             setAcceptTerms(checked === true)
                         }
-                        className="mt-1 mr-2"
+                        className="w-6 h-6 border-2 border-gray-400 rounded-md mt-0.5"
                     />
-                    <label htmlFor="termos" className="text-sm">
+                    <label htmlFor="termos" className="text-base select-none">
                         Li e aceito os{" "}
-                        <a href="#" className="text-[#2e7d32] hover:underline">
-                            Termos e Condições
+                        <a
+                            href="#"
+                            className="text-[#2e7d32] font-semibold hover:underline"
+                        >
+                            Termos e Condições.
                         </a>
-                        .
                     </label>
                 </div>
                 {errors.acceptTerms && (
                     <p className="text-red-500 text-sm">{errors.acceptTerms}</p>
                 )}
 
-                <div className="pt-4">
+                <div className="pt-2">
                     <motion.button
                         type="submit"
-                        className="w-full bg-[#2e7d32] text-white py-3 rounded-md font-medium hover:bg-[#1b5e20] transition-colors"
+                        className="w-full bg-[#2e7d32] text-white py-4 rounded-xl text-xl font-bold hover:bg-[#1b5e20] transition-colors"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                     >
