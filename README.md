@@ -10,6 +10,7 @@ Este repositório contém o código fonte do frontend do Projeto Perenne. O proj
 
 -   **React** - Biblioteca JavaScript para construção de interfaces de usuário
 -   **TypeScript** - Superset JavaScript com tipagem estática
+-   **ESLint** 
 -   **Vite** - Build tool e bundler para desenvolvimento rápido
 -   **Tailwind CSS** - Framework CSS para estilização
 -   **Next Fetch API** - Cliente HTTP para requisições à API
