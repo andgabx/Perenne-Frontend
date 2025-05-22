@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const API_URL = "http://localhost:5181"; 
+export const API_URL = "http://181.221.115.64:5000"; 
 const EXPIRATION_TOKEN_TIME = 60 * 60 * 2 * 1000; // 2 horas
 
 interface Token {
@@ -46,6 +46,8 @@ async function refreshAccessToken(token: Token) {
     };
   }
 }
+
+
 
 
 export default NextAuth(
@@ -106,7 +108,7 @@ export default NextAuth(
                     email: userData.email,
                     name: `${userData.firstName} ${userData.lastName}`,
                     accessToken: token,
-                    expiresIn: Date.now() + EXPIRATION_TOKEN_TIME // 2h
+                    expiresIn: Math.floor(Date.now() / 1000) + EXPIRATION_TOKEN_TIME // 2h
                   };
 
                 // nesse return eu dei spread em todo o corpo da primeira response, assim como o o token que vem na 2a, e o tempo de expiracao 
@@ -130,7 +132,7 @@ export default NextAuth(
                         email: user.email,
                         name: user.name,
                         accessToken: user.accessToken,
-                        expiresIn: user.expiresIn,
+                        expiresIn: Math.floor((user.expiresIn as number) / 1000),
                     };
                 }
 
@@ -176,6 +178,7 @@ export default NextAuth(
     pages: {
         signIn: "/auth/login",
         error: "/auth/error",
+        newUser: "/auth/register",
         // vc vai parar pra ver a documentacao do nextauth pra ver pra que serve isso aqui
     },
 

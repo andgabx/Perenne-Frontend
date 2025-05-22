@@ -1,6 +1,6 @@
 "use client"; // Importante para Next.js 13+ App Router ou para indicar que é um Client Component no Pages Router
 import { signIn, signOut, useSession } from "next-auth/react";
-import Link from "next/link"; // Mantenho, embora não seja usado neste snippet
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react"; // Importando useEffect para logs de renderização
 
 const Login = () => {
@@ -9,6 +9,7 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const router = useRouter();
 
     // Log para ver o estado da sessão toda vez que o componente renderiza
     useEffect(() => {
@@ -24,7 +25,6 @@ const Login = () => {
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault(); // Impede o comportamento padrão de recarregamento da página do formulário
-        
         // 2. Verifique se handleSignIn está sendo acionada
         console.log('handleSignIn foi acionada!'); 
         setError("");
@@ -50,6 +50,7 @@ const Login = () => {
                 // const router = useRouter();
                 // router.push('/dashboard');
                 console.log('Login bem-sucedido! Redirecionando...');
+                router.push('/descoberta');
             }
         } catch (error) {
             setError("An error occurred during sign in");
