@@ -45,17 +45,32 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     useEffect(() => {
         const groupsByUserId = async () => {
-            if (!session?.user?.accessToken) return;
+            console.log("Fetching groups...");
+            console.log("Session:", session);
+            if (!session?.user?.accessToken) {
+                console.log("No access token available");
+                return;
+            }
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/getgroups`, {
-                    headers: {
-                        Authorization: `Bearer ${session.user.accessToken}`,
-                    },
-                });
-                if (!response.ok) return;
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/user/getgroups`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.user.accessToken}`,
+                            "ngrok-skip-browser-warning": "69420",
+                        },
+                    }
+                );
+                console.log("Response status:", response.status);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Failed to fetch groups:", errorText);
+                    return;
+                }
                 const data = await response.json();
                 setGroups(Array.isArray(data) ? data : []);
             } catch (error) {
+                console.error("Error in groupsByUserId:", error);
                 setGroups([]);
             }
         };
