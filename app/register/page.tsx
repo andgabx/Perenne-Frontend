@@ -63,7 +63,7 @@ export default function Home() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <StepTwo initialData={formData} onBack={handleBack} onSubmit={handleSubmit} />
+                  {/* <StepTwo initialData={formData} onBack={handleBack} onSubmit={handleSubmit} /> */}
                 </motion.div>
               )}
             </AnimatePresence>

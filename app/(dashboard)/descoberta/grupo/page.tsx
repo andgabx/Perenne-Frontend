@@ -28,7 +28,9 @@ const GroupPage = () => {
     const [myGroups, setMyGroups] = useState<Group[]>([]); // Para grupos dos quais o usuário é membro
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [currentMessage, setCurrentMessage] = useState("");
-    const [currentChannelId, setCurrentChannelId] = useState<string | null>(null); // Estado para o ID do canal de chat ativo
+    const [currentChannelId, setCurrentChannelId] = useState<string | null>(
+        null
+    ); // Estado para o ID do canal de chat ativo
     const router = useRouter();
 
     // Ref para a conexão SignalR para que ela persista entre as renderizações
@@ -39,6 +41,7 @@ const GroupPage = () => {
     const fetchMyGroups = async () => {
         // Só busca se o usuário estiver autenticado e tiver um token
         if (status !== "authenticated" || !session?.user?.accessToken) {
+            console.log("sem token");
             setMyGroups([]); // Limpa os grupos se não estiver autenticado
             return;
         }
@@ -49,7 +52,10 @@ const GroupPage = () => {
                 },
             });
             if (!response.ok) {
-                console.error("Failed to fetch user groups:", await response.text());
+                console.error(
+                    "Failed to fetch user groups:",
+                    await response.text()
+                );
                 setMyGroups([]);
                 return;
             }
@@ -67,17 +73,15 @@ const GroupPage = () => {
     }, [session, status, API_URL]); // Dependências: re-executa se a sessão, status ou API_URL mudar
 
     // Função para buscar todos os grupos disponíveis
-    const fetchAllGroups = async () => {
+    const fetchAllGroups = async (accessToken: string) => {
         try {
-            const response = await fetch(`${API_URL}/api/group/getall`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session?.user.accessToken}`,
-                    },
-                }
-            );
+            const response = await fetch(`${API_URL}/api/group/getall`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error("API Error (getall groups):", errorText);
@@ -92,10 +96,11 @@ const GroupPage = () => {
         }
     };
 
-    // Efeito para buscar todos os grupos na montagem do componente
     useEffect(() => {
-        fetchAllGroups();
-    }, [API_URL]); // Dependência: re-executa se a API_URL mudar
+        if (session?.user?.accessToken) {
+            fetchAllGroups(session.user.accessToken);
+        }
+    }, [API_URL, session, status]); 
 
     // Efeito para gerenciar a conexão SignalR
     useEffect(() => {
@@ -105,13 +110,18 @@ const GroupPage = () => {
             if (connectionRef.current) {
                 connectionRef.current.stop();
                 connectionRef.current = null;
-                console.log("SignalR connection stopped due to unauthenticated status.");
+                console.log(
+                    "SignalR connection stopped due to unauthenticated status."
+                );
             }
             return;
         }
 
         // Se já existe uma conexão e ela está conectada, não crie outra
-        if (connectionRef.current && connectionRef.current.state === signalR.HubConnectionState.Connected) {
+        if (
+            connectionRef.current &&
+            connectionRef.current.state === signalR.HubConnectionState.Connected
+        ) {
             return;
         }
 
@@ -132,20 +142,45 @@ const GroupPage = () => {
 
         // Define o handler para receber mensagens do hub (método "ReceiveMessage" do ChatHub.cs)
         // O servidor envia: senderDisplayName, messageContent, chatMessage.CreatedAt, userIdGuid.ToString()
-        newConnection.on("ReceiveMessage", (user: string, message: string, createdAt: string, senderUserId: string) => {
-            setChatMessages((prevMessages) => [...prevMessages, { user, message, createdAt, senderUserId }]);
-        });
+        newConnection.on(
+            "ReceiveMessage",
+            (
+                user: string,
+                message: string,
+                createdAt: string,
+                senderUserId: string
+            ) => {
+                setChatMessages((prevMessages) => [
+                    ...prevMessages,
+                    { user, message, createdAt, senderUserId },
+                ]);
+            }
+        );
 
         // Inicia a conexão
-        newConnection.start()
+        newConnection
+            .start()
             .then(() => {
                 console.log("SignalR Connected.");
                 connectionRef.current = newConnection; // Armazena a conexão na ref
                 // Se já houver um canal selecionado, tenta se juntar a ele automaticamente
-                if (currentChannelId && newConnection.state === signalR.HubConnectionState.Connected) {
-                    newConnection.invoke("JoinChannel", currentChannelId)
-                        .then(() => console.log(`Re-joined channel ${currentChannelId} on reconnect.`))
-                        .catch(err => console.error(`Error re-joining channel ${currentChannelId}:`, err));
+                if (
+                    currentChannelId &&
+                    newConnection.state === signalR.HubConnectionState.Connected
+                ) {
+                    newConnection
+                        .invoke("JoinChannel", currentChannelId)
+                        .then(() =>
+                            console.log(
+                                `Re-joined channel ${currentChannelId} on reconnect.`
+                            )
+                        )
+                        .catch((err) =>
+                            console.error(
+                                `Error re-joining channel ${currentChannelId}:`,
+                                err
+                            )
+                        );
                 }
             })
             .catch((err) => {
@@ -180,7 +215,6 @@ const GroupPage = () => {
             if (response.ok) {
                 setName("");
                 setDescription("");
-                fetchAllGroups(); // Atualiza a lista de todos os grupos
                 fetchMyGroups(); // Atualiza a lista de "Meus Grupos" também
                 alert("Grupo criado com sucesso!");
             } else {
@@ -197,7 +231,11 @@ const GroupPage = () => {
     // Função para lidar com a entrada em um grupo (via REST API)
     // Usada para "Grupos Disponíveis" (onde o usuário ainda não é membro)
     const handleJoinGroup = async (groupId: string) => {
-        if (status !== "authenticated" || !session || !session.user.accessToken) {
+        if (
+            status !== "authenticated" ||
+            !session ||
+            !session.user.accessToken
+        ) {
             alert("Você precisa estar logado para entrar em um grupo");
             return;
         }
@@ -227,7 +265,6 @@ const GroupPage = () => {
             fetchMyGroups();
             // Não chama handleOpenChat aqui, pois o usuário pode querer apenas entrar no grupo, não necessariamente abrir o chat imediatamente.
             // A abertura do chat será feita pelo novo botão "Entrar no Chat" na seção "Meus Grupos".
-
         } catch (error) {
             console.error("Erro ao entrar no grupo:", error);
             alert("Erro ao entrar no grupo.");
@@ -236,23 +273,44 @@ const GroupPage = () => {
 
     // Função para abrir o chat de um grupo do qual o usuário JÁ É MEMBRO
     const handleOpenChat = async (groupId: string) => {
-        if (status !== "authenticated" || !session || !session.user.accessToken) {
+        if (
+            status !== "authenticated" ||
+            !session ||
+            !session.user.accessToken
+        ) {
             alert("Você precisa estar logado para entrar no chat");
             return;
         }
 
-        if (!connectionRef.current || connectionRef.current.state !== signalR.HubConnectionState.Connected) {
-            alert("Conexão de chat não está ativa. Tente novamente mais tarde.");
-            console.warn("Conexão SignalR não estabelecida ou não conectada. Não foi possível entrar no canal de chat.");
+        if (
+            !connectionRef.current ||
+            connectionRef.current.state !== signalR.HubConnectionState.Connected
+        ) {
+            alert(
+                "Conexão de chat não está ativa. Tente novamente mais tarde."
+            );
+            console.warn(
+                "Conexão SignalR não estabelecida ou não conectada. Não foi possível entrar no canal de chat."
+            );
             return;
         }
 
         try {
             // Primeiro, tenta sair do canal anterior, se houver
             if (currentChannelId && currentChannelId !== groupId) {
-                await connectionRef.current.invoke("LeaveChannel", currentChannelId)
-                    .then(() => console.log(`Left previous channel: ${currentChannelId}`))
-                    .catch(err => console.error(`Error leaving channel ${currentChannelId}:`, err));
+                await connectionRef.current
+                    .invoke("LeaveChannel", currentChannelId)
+                    .then(() =>
+                        console.log(
+                            `Left previous channel: ${currentChannelId}`
+                        )
+                    )
+                    .catch((err) =>
+                        console.error(
+                            `Error leaving channel ${currentChannelId}:`,
+                            err
+                        )
+                    );
             }
 
             // Agora, tenta entrar no novo canal
@@ -269,15 +327,26 @@ const GroupPage = () => {
     // Função para enviar uma mensagem via SignalR
     const sendChatMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!currentMessage.trim() || !currentChannelId || !connectionRef.current || connectionRef.current.state !== signalR.HubConnectionState.Connected) {
-            console.warn("Não é possível enviar mensagem: mensagem vazia, canal não selecionado ou conexão não ativa.");
+        if (
+            !currentMessage.trim() ||
+            !currentChannelId ||
+            !connectionRef.current ||
+            connectionRef.current.state !== signalR.HubConnectionState.Connected
+        ) {
+            console.warn(
+                "Não é possível enviar mensagem: mensagem vazia, canal não selecionado ou conexão não ativa."
+            );
             return;
         }
 
         try {
             // O ChatHub.cs espera (channelId, messageContent)
             // O nome do usuário é obtido no servidor via Context.UserIdentifier
-            await connectionRef.current.invoke("SendMessage", currentChannelId, currentMessage);
+            await connectionRef.current.invoke(
+                "SendMessage",
+                currentChannelId,
+                currentMessage
+            );
             setCurrentMessage(""); // Limpa o input da mensagem
             console.log("Mensagem enviada via SignalR.");
         } catch (err) {
@@ -289,8 +358,13 @@ const GroupPage = () => {
     return (
         <div className="p-4 space-y-8 max-w-2xl mx-auto">
             {/* Formulário para Criar Grupo */}
-            <form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
-                <h1 className="text-2xl font-bold text-white mb-4">Criar Novo Grupo</h1>
+            <form
+                onSubmit={handleSubmit}
+                className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4"
+            >
+                <h1 className="text-2xl font-bold text-white mb-4">
+                    Criar Novo Grupo
+                </h1>
                 <input
                     type="text"
                     placeholder="Nome do grupo"
@@ -307,14 +381,19 @@ const GroupPage = () => {
                     rows={3}
                     className="w-full p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out">
+                <Button
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out"
+                >
                     Criar Grupo
                 </Button>
             </form>
 
             {/* Lista de Grupos Disponíveis (Todos os grupos) */}
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h1 className="text-2xl font-bold text-white mb-4">Grupos Disponíveis (Entrar no Grupo)</h1>
+                <h1 className="text-2xl font-bold text-white mb-4">
+                    Grupos Disponíveis (Entrar no Grupo)
+                </h1>
                 {allGroups.length === 0 ? (
                     <p className="text-gray-400">Nenhum grupo disponível.</p>
                 ) : (
@@ -349,9 +428,13 @@ const GroupPage = () => {
 
             {/* Nova Seção: Meus Grupos */}
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h1 className="text-2xl font-bold text-white mb-4">Meus Grupos (Abrir Chat)</h1>
+                <h1 className="text-2xl font-bold text-white mb-4">
+                    Meus Grupos (Abrir Chat)
+                </h1>
                 {myGroups.length === 0 ? (
-                    <p className="text-gray-400">Você não é membro de nenhum grupo.</p>
+                    <p className="text-gray-400">
+                        Você não é membro de nenhum grupo.
+                    </p>
                 ) : (
                     <ul className="flex flex-col gap-4">
                         {myGroups.map((group) => (
@@ -385,20 +468,29 @@ const GroupPage = () => {
             {/* Interface de Chat */}
             {currentChannelId && (
                 <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
-                    <h1 className="text-2xl font-bold text-white mb-4">Chat do Grupo (ID: {currentChannelId})</h1>
+                    <h1 className="text-2xl font-bold text-white mb-4">
+                        Chat do Grupo (ID: {currentChannelId})
+                    </h1>
                     <div className="h-64 overflow-y-auto border border-gray-700 rounded-md p-3 bg-gray-900 text-gray-200">
                         {chatMessages.length === 0 ? (
-                            <p className="text-gray-500">Nenhuma mensagem ainda. Comece a conversar!</p>
+                            <p className="text-gray-500">
+                                Nenhuma mensagem ainda. Comece a conversar!
+                            </p>
                         ) : (
                             chatMessages.map((msg, index) => (
                                 <div key={index} className="mb-2">
                                     {/* Exibe a data/hora se disponível */}
                                     {msg.createdAt && (
                                         <span className="text-gray-600 text-xs mr-2">
-                                            {new Date(msg.createdAt).toLocaleTimeString()}
+                                            {new Date(
+                                                msg.createdAt
+                                            ).toLocaleTimeString()}
                                         </span>
                                     )}
-                                    <span className="font-bold text-blue-400">{msg.user}:</span> {msg.message}
+                                    <span className="font-bold text-blue-400">
+                                        {msg.user}:
+                                    </span>{" "}
+                                    {msg.message}
                                 </div>
                             ))
                         )}
@@ -411,7 +503,10 @@ const GroupPage = () => {
                             onChange={(e) => setCurrentMessage(e.target.value)}
                             className="flex-grow p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out">
+                        <Button
+                            type="submit"
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out"
+                        >
                             Enviar
                         </Button>
                     </form>
