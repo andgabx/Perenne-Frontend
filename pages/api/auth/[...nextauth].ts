@@ -183,7 +183,7 @@ export default NextAuth(
 
     session: {
         strategy: "jwt",
-        maxAge: EXPIRATION_TOKEN_TIME / 1000, 
+        maxAge: EXPIRATION_TOKEN_TIME, 
         // e isso aqui tb vai ler bonitinho
 
 }
