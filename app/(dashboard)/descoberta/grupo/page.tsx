@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import * as signalR from "@microsoft/signalr"; // Importa SignalR
+import toast from "react-hot-toast";
 
 interface Group {
     id: string;
@@ -135,6 +136,7 @@ const GroupPage = () => {
         }
 
         // Constrói a conexão SignalR
+        const currentGroup = myGroups.find((g) => g.id === currentChannelId);
         const newConnection = new signalR.HubConnectionBuilder()
             .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/chathub`, {
                 accessTokenFactory: () => session.user.accessToken!, // Garante que o token seja uma string
@@ -269,11 +271,17 @@ const GroupPage = () => {
             if (!response.ok) {
                 const errorData = await response.text();
                 console.error("Erro ao entrar no grupo (API):", errorData);
-                alert(`Erro ao entrar no grupo: ${errorData}`);
+                toast.error(`Erro ao entrar no grupo: ${errorData}`, {
+                    position: "bottom-right",
+                    duration: 3000,
+                });
                 return;
             }
 
-            alert("Entrou no grupo com sucesso!");
+            toast.success("Entrou no grupo com sucesso!", {
+                position: "bottom-right",
+                duration: 3000,
+            });
             // Após entrar no grupo via API, atualiza a lista de "Meus Grupos"
             fetchMyGroups();
             // Não chama handleOpenChat aqui, pois o usuário pode querer apenas entrar no grupo, não necessariamente abrir o chat imediatamente.
@@ -291,7 +299,10 @@ const GroupPage = () => {
             !session ||
             !session.user.accessToken
         ) {
-            alert("Você precisa estar logado para entrar no chat");
+            toast.error("Você precisa estar logado para entrar no chat", {
+                position: "bottom-right",
+                duration: 3000,
+            });
             return;
         }
 
@@ -299,8 +310,12 @@ const GroupPage = () => {
             !connectionRef.current ||
             connectionRef.current.state !== signalR.HubConnectionState.Connected
         ) {
-            alert(
-                "Conexão de chat não está ativa. Tente novamente mais tarde."
+            toast.error(
+                "Conexão de chat não está ativa. Tente novamente mais tarde.",
+                {
+                    position: "bottom-right",
+                    duration: 3000,
+                }
             );
             console.warn(
                 "Conexão SignalR não estabelecida ou não conectada. Não foi possível entrar no canal de chat."
@@ -333,7 +348,10 @@ const GroupPage = () => {
             console.log(`Juntou-se ao canal SignalR: ${groupId}`);
         } catch (error) {
             console.error("Erro ao entrar no canal de chat:", error);
-            alert("Erro ao entrar no chat do grupo.");
+            toast.error("Erro ao entrar no canal de chat:", {
+                position: "bottom-right",
+                duration: 3000,
+            });
         }
     };
 
@@ -346,8 +364,12 @@ const GroupPage = () => {
             !connectionRef.current ||
             connectionRef.current.state !== signalR.HubConnectionState.Connected
         ) {
-            console.warn(
-                "Não é possível enviar mensagem: mensagem vazia, canal não selecionado ou conexão não ativa."
+            toast.error(
+                "Não é possível enviar mensagem: mensagem vazia, canal não selecionado ou conexão não ativa.",
+                {
+                    position: "bottom-right",
+                    duration: 3000,
+                }
             );
             return;
         }
@@ -368,10 +390,10 @@ const GroupPage = () => {
         }
     };
 
+    const currentGroup = myGroups.find((g) => g.id === currentChannelId);
+
     return (
         <div className="p-4 space-y-8 max-w-2xl mx-auto">
-
-
             {/* Formulário para Criar Grupo */}
             <form
                 onSubmit={handleSubmit}
@@ -402,92 +424,102 @@ const GroupPage = () => {
                 >
                     Criar Grupo
                 </Button>
-
             </form>
 
-            {/* Lista de Grupos Disponíveis (Todos os grupos) */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h1 className="text-2xl font-bold text-white mb-4">
-                    Grupos Disponíveis (Entrar no Grupo)
-                </h1>
-                {allGroups.length === 0 ? (
-                    <p className="text-gray-400">Nenhum grupo disponível.</p>
-                ) : (
-                    <ul className="flex flex-col gap-4">
-                        {allGroups.map((group) => (
-                            <li
-                                key={group.id}
-                                className="border border-gray-700 p-4 rounded-lg bg-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center"
-                            >
-                                <div className="mb-2 sm:mb-0">
-                                    <p className="text-lg font-bold text-white">
-                                        NOME: {group.name}
-                                    </p>
-                                    <p className="text-sm text-gray-400">
-                                        DESCRIÇÃO: {group.description}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                        ID: {group.id}
-                                    </p>
-                                </div>
-                                <Button
-                                    onClick={() => handleJoinGroup(group.id)}
-                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+            <div className="flex justify-center flex-row gap-16">
+                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h1 className="text-2xl font-bold text-white mb-4">
+                        Grupos Disponíveis (Entrar no Grupo)
+                    </h1>
+                    {allGroups.length === 0 ? (
+                        <p className="text-gray-400">
+                            Nenhum grupo disponível.
+                        </p>
+                    ) : (
+                        <ul className="flex flex-col gap-4">
+                            {allGroups.map((group) => (
+                                <li
+                                    key={group.id}
+                                    className="border border-gray-700 p-4 rounded-lg bg-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center"
                                 >
-                                    Entrar no Grupo
-                                </Button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
+                                    <div className="mb-2 sm:mb-0">
+                                        <p className="text-lg font-bold text-white">
+                                            NOME: {group.name}
+                                        </p>
+                                        <p className="text-sm text-gray-400">
+                                            DESCRIÇÃO: {group.description}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            ID: {group.id}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        onClick={() =>
+                                            handleJoinGroup(group.id)
+                                        }
+                                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+                                    >
+                                        Entrar no Grupo
+                                    </Button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
 
-            {/* Nova Seção: Meus Grupos */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h1 className="text-2xl font-bold text-white mb-4">
-                    Meus Grupos (Abrir Chat)
-                </h1>
-                {myGroups.length === 0 ? (
-                    <p className="text-gray-400">
-                        Você não é membro de nenhum grupo.
-                    </p>
-                ) : (
-                    <ul className="flex flex-col gap-4">
-                        {myGroups.map((group) => (
-                            <li
-                                key={group.id}
-                                className="border border-gray-700 p-4 rounded-lg bg-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center"
-                            >
-                                <div className="mb-2 sm:mb-0">
-                                    <p className="text-lg font-bold text-white">
-                                        NOME: {group.name}
-                                    </p>
-                                    <p className="text-sm text-gray-400">
-                                        DESCRIÇÃO: {group.description}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                        ID: {group.id}
-                                    </p>
-                                </div>
-                                <Button
-                                    onClick={() => handleOpenChat(group.id)}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h1 className="text-2xl font-bold text-white mb-4">
+                        Meus Grupos (Abrir Chat)
+                    </h1>
+                    {myGroups.length === 0 ? (
+                        <p className="text-gray-400">
+                            Você não é membro de nenhum grupo.
+                        </p>
+                    ) : (
+                        <ul className="flex flex-col gap-4">
+                            {myGroups.map((group) => (
+                                <li
+                                    key={group.id}
+                                    className="border border-gray-700 p-4 rounded-lg bg-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center"
                                 >
-                                    Entrar no Chat
-                                </Button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                                    <div className="mb-2 sm:mb-0">
+                                        <p className="text-lg font-bold text-white">
+                                            NOME: {group.name}
+                                        </p>
+                                        <p className="text-sm text-gray-400">
+                                            DESCRIÇÃO: {group.description}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            ID: {group.id}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        onClick={() => handleOpenChat(group.id)}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+                                    >
+                                        Entrar no Chat
+                                    </Button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
             </div>
 
             {/* Interface de Chat */}
             {currentChannelId && (
-                <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
-                    <h1 className="text-2xl font-bold text-white mb-4">
-                        Chat do Grupo (ID: {currentChannelId})
-                    </h1>
-                    <div className="h-64 overflow-y-auto border border-gray-700 rounded-md p-3 bg-gray-900 text-gray-200">
+                <div className="bg-background p-6 rounded-lg shadow-lg space-y-4">
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-2xl font-bold text-black">
+                            Chat do Grupo{" "}
+                        </h1>
+                        <div className="text-primary text-2xl font-bold">
+                            {currentGroup
+                                ? `${currentGroup.name}`
+                                : `(ID: ${currentChannelId})`}
+                        </div>
+                    </div>
+                    <div className="h-64 overflow-y-auto border border-gray-700 rounded-md p-3 bg-gray-300 text-gray-200">
                         {chatMessages.length === 0 ? (
                             <p className="text-gray-500">
                                 Nenhuma mensagem ainda. Comece a conversar!
@@ -497,7 +529,7 @@ const GroupPage = () => {
                                 <div key={index} className="mb-2">
                                     {/* Exibe a data/hora se disponível */}
                                     {msg.createdAt && (
-                                        <span className="text-gray-600 text-xs mr-2">
+                                        <span className="text-gray-300 text-xs mr-2">
                                             {new Date(
                                                 msg.createdAt
                                             ).toLocaleTimeString()}
@@ -517,11 +549,11 @@ const GroupPage = () => {
                             placeholder="Digite sua mensagem..."
                             value={currentMessage}
                             onChange={(e) => setCurrentMessage(e.target.value)}
-                            className="flex-grow p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 pl-4"
                         />
                         <Button
                             type="submit"
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out"
+                            className="bg-green-600 hover:bg-green-700 hover:scale-105 h-full text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out"
                         >
                             Enviar
                         </Button>

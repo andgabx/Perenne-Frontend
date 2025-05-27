@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Heebo } from "next/font/google";
 import "./globals.css";
 import Providers from "@/app/providers";
+import { Toaster } from "react-hot-toast";
 
 const heebo = Heebo({
     variable: "--font-heebo",
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: IProps) {
                 className={`${heebo.variable} antialiased font-heebo`}
                 suppressHydrationWarning
             >
+                <Toaster />
                 <Providers>{children}</Providers>
             </body>
         </html>

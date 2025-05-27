@@ -7,8 +7,10 @@ import { Card } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 
 const Login = () => {
+
     // 1. Verifique o estado da sessão ao renderizar o componente
     const { data: session, status } = useSession(); // Adicione 'status' para mais detalhes
     const [email, setEmail] = useState("");
@@ -22,6 +24,9 @@ const Login = () => {
         console.log("Componente Login Renderizado.");
         console.log("Dados da Sessão:", session);
         console.log("Status da Sessão:", status); // 'loading', 'authenticated', 'unauthenticated'
+        if (session) {
+            router.push("/descoberta");
+        }
         if (status === "unauthenticated") {
             console.log(
                 "Usuário não autenticado, formulário de login deveria estar visível."
@@ -51,15 +56,12 @@ const Login = () => {
 
             if (result?.error) {
                 setError("Invalid email or password");
+                toast.error("Email ou senha inválidos!");
                 console.error(
                     "Erro de login retornado por signIn:",
                     result.error
                 );
             } else {
-                // Login bem-sucedido. Você pode querer redirecionar aqui.
-                // Ex: import { useRouter } from 'next/router';
-                // const router = useRouter();
-                // router.push('/dashboard');
                 console.log("Login bem-sucedido! Redirecionando...");
                 router.push("/descoberta");
             }
@@ -70,10 +72,10 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen w-full bg-cover bg-no-repeat bg-[url('/bg.png')] bg-[position:100%_center]">
+        <div className="min-h-screen bg-cover bg-no-repeat bg-[url('/bg.png')] bg-[position:100%_center]">
             <SiteHeader />
             <div className="flex min-h-[calc(100vh-var(--header-height))] items-center justify-center">
-                <Card className=" rounded-2xl border-2 shadow-lg w-[45vw] p-8">
+                <Card className="rounded-2xl border-2 shadow-lg w-[90vw] md:w-[80vw] lg:w-[60vw] xl:w-[40vw] 2xl:w-[30vw] p-12">
                     <h1 className="text-2xl font-bold text-center text-green-700 mb-6 uppercase">
                         LOGIN
                     </h1>

@@ -101,7 +101,7 @@ export default function StepTwo({
         if (!validate()) return;
 
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/user/create`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/guest/create`,
             {
                 method: "POST",
                 headers: {
