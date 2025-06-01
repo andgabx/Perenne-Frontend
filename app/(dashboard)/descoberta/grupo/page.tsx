@@ -231,15 +231,15 @@ const GroupPage = () => {
                 setName("");
                 setDescription("");
                 fetchMyGroups(); // Atualiza a lista de "Meus Grupos" também
-                alert("Grupo criado com sucesso!");
+                toast.success("Grupo criado com sucesso!");
             } else {
                 const errorData = await response.text();
                 console.error("Erro ao criar grupo:", errorData);
-                alert(`Erro ao criar grupo: ${errorData}`);
+                toast.error(`Erro ao criar grupo`);
             }
         } catch (error) {
             console.error("Erro ao criar grupo:", error);
-            alert("Erro ao criar grupo.");
+            toast.error("Erro ao criar grupo.");
         }
     };
 
@@ -251,7 +251,10 @@ const GroupPage = () => {
             !session ||
             !session.user.accessToken
         ) {
-            alert("Você precisa estar logado para entrar em um grupo");
+            toast.error("Você precisa estar logado para entrar em um grupo", {
+                position: "bottom-right",
+                duration: 3000,
+            });
             return;
         }
 

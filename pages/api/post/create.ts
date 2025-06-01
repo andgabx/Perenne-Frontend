@@ -1,5 +1,7 @@
 "use server";
 
+import { getHeaders } from "@/pages/api/headers";
+
 interface CreatePostData {
     title: string;
     content: string;
@@ -15,11 +17,7 @@ export const createPost = async (
         `${process.env.NEXT_PUBLIC_API_URL}/api/feed/${groupId}/createpost`,
         {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "69420",
-                Authorization: `Bearer ${token}`,
-            },
+            headers: getHeaders(token),
             body: JSON.stringify(data),
         }
     );

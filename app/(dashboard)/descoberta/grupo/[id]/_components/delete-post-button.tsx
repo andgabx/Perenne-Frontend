@@ -11,9 +11,10 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { useSession } from "next-auth/react";
-import { deletePost } from "../../../../../../pages/api/post/delete";
+import { deletePost } from "@/pages/api/post/delete";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+
 const DeletePostButton = ({
     postId,
     groupId,

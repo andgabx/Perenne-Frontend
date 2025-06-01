@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { postSchema, Post } from "@/lib/schemas/post";
 import { Button } from "@/components/ui/button";
-import { createPost } from "../../../../../../pages/api/post/create";
+import { createPost } from "@/pages/api/post/create";
 
 function PostForm({ groupId }: { groupId: string }) {
     const { data: session } = useSession();

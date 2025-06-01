@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import DeletePostButton from "./delete-post-button";
-import { getLastPosts } from "../../../../../../pages/api/post/get-last-posts";
+import { getLastPosts } from "@/pages/api/post/get-last-posts";
 
 interface Post {
     id: string;
@@ -58,7 +58,7 @@ export default function GetLastPosts() {
                             posts.map((post) => (
                                 <li
                                     key={post.id}
-                                    className="mb-4 border-b pb-2"
+                                    className="mb-4 border-b pb-2 flex justify-between max-w-[80vw] mx-auto"
                                 >
                                     <p>{post.id}</p>
                                     <strong>{post.title}</strong>

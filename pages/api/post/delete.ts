@@ -1,16 +1,13 @@
 "use server";
 
+import { getHeaders } from "@/pages/api/headers";
 
 export const deletePost = async (postId: string, groupId: string, token: string) => {
     const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/feed/${groupId}/deletepost/${postId}`,
         {
             method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "69420",
-                Authorization: `Bearer ${token}`,
-            },
+            headers: getHeaders(token),
         }
     );
     if (!response.ok) {

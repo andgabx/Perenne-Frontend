@@ -1,5 +1,8 @@
 "use server";
 
+import { getHeaders } from "@/pages/api/headers";
+
+
 interface Post {
     id: string;
     title: string;
@@ -15,11 +18,7 @@ export const getLastPosts = async (
     const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/feed/${groupId}/getposts/10`, // mudar esse numero pra manipular os ultimos posts que forem aparecer
         {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "69420",
-            },
+            headers: getHeaders(token),
         }
     );
 
