@@ -68,7 +68,7 @@ export default function StepOne({ initialData, onContinue }: StepOneProps) {
     };
 
     return (
-        <div className="p-4">
+        <div className="w-full max-w-xl mx-auto p-4 sm:p-6 md:p-8">
             <h2 className="text-center text-black pb-6 text-lg">
                 Informações iniciais
             </h2>
@@ -103,17 +103,16 @@ export default function StepOne({ initialData, onContinue }: StepOneProps) {
                             <PopoverTrigger asChild>
                                 <Button
                                     className={cn(
-                                        "w-full justify-start text-left font-normal border-2 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] hover:bg-[#FFE29D]/90",
-                                        !dataNascimento &&
-                                            "text-muted-foreground"
+                                        "w-full justify-between text-left font-normal border-2 text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] hover:bg-[#FFE29D]/90",
+                                        !dataNascimento && "text-gray-500"
                                     )}
                                 >
-                                    <CalendarIcon className="mr-2 h-4 w-4 text-[#2e7d32]" />
                                     {dataNascimento
                                         ? new Date(
                                               dataNascimento
                                           ).toLocaleDateString()
-                                        : "Data de nascimento"}
+                                        : "Data de Nascimento"}
+                                    <CalendarIcon className="h-4 w-4 text-[#2e7d32]" />
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0 bg-card border-[#FFE29D]">

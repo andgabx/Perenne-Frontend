@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 interface StepTwoProps {
     initialData: {
         CPF: string;
@@ -51,6 +52,7 @@ export default function StepTwo({
     });
     const [nome] = useState(initialData.nome);
     const [sobrenome] = useState(initialData.sobrenome);
+    const router = useRouter();
 
     const validate = () => {
         const newErrors = {
@@ -114,7 +116,6 @@ export default function StepTwo({
                     LastName: sobrenome,
                     CPF,
                 }),
-
             }
         );
 
@@ -129,14 +130,16 @@ export default function StepTwo({
                 sobrenome,
             });
             toast.success("Conta criada com sucesso!");
+            router.push("/login");
         } else {
             toast.error("Erro ao criar conta!");
+            router.push("/register");
         }
     };
 
     return (
-        <div className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-7">
+        <div className="w-full max-w-md mx-auto p-4 sm:p-6 md:p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <Input
                         type="text"

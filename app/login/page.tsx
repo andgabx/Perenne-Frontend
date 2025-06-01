@@ -62,7 +62,7 @@ const Login = () => {
                     result.error
                 );
             } else {
-                console.log("Login bem-sucedido! Redirecionando...");
+                toast.success("Login bem-sucedido!");
                 router.push("/descoberta");
             }
         } catch (error) {

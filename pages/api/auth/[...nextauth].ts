@@ -15,7 +15,7 @@ async function refreshAccessToken(token: Token) {
     try {
         // Request a new token using userId and email
         const tokenRes = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/identity/generatetoken`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/generatetoken`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
     Card,
     CardTitle,
@@ -8,8 +8,8 @@ import {
     CardDescription,
 } from "@/components/ui/card";
 import { useParams } from "next/navigation";
-import GetLastPosts from "./getlastposts";
-import PostForm from "./formpost";
+import GetLastPosts from "./_components/last-posts-list";
+import PostForm from "./_components/create-post-form";
 
 interface Member {
     userId: string;
@@ -24,8 +24,6 @@ interface GrupoData {
     memberList: Member[];
 }
 
-
-
 const Grupo = () => {
     const params = useParams();
     const id = params?.id;
@@ -38,7 +36,9 @@ const Grupo = () => {
         setLoading(true);
         setErro(false);
 
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/group/${id}`, { method: "GET" })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/group/${id}`, {
+            method: "GET",
+        })
             .then((res) => {
                 if (!res.ok) throw new Error("Erro ao buscar grupo");
                 return res.json();
@@ -53,34 +53,34 @@ const Grupo = () => {
 
     return (
         <div>
-            {loading && <h1>Carregando...</h1>}
-
-            {!loading && !erro && grupo && (
-                <>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Comunidade: {grupo.name}</CardTitle>
-                            <CardDescription>
-                                Descrição: {grupo.description}
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-                    <p>Membros:</p>
-                    <ul>
-                        {grupo.memberList && grupo.memberList.length > 0 ? (
-                            grupo.memberList.map((membro) => (
-                                <li key={membro.userId}>
-                                    {membro.firstName} {membro.lastName}
-                                </li>
-                            ))
-                        ) : (
-                            <li>Nenhum membro encontrado.</li>
-                        )}
-                    </ul>
-                </>
-            )}
-            <GetLastPosts />
-            <PostForm groupId={id as string} />
+            <Suspense fallback={<div>dasoijoijdfasojisdfoijsdf...</div>}>
+                {!loading && !erro && grupo && (
+                    <>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Comunidade: {grupo.name}</CardTitle>
+                                <CardDescription>
+                                    Descrição: {grupo.description}
+                                </CardDescription>
+                            </CardHeader>
+                        </Card>
+                        <p>Membros:</p>
+                        <ul>
+                            {grupo.memberList && grupo.memberList.length > 0 ? (
+                                grupo.memberList.map((membro) => (
+                                    <li key={membro.userId}>
+                                        {membro.firstName} {membro.lastName}
+                                    </li>
+                                ))
+                            ) : (
+                                <li>Nenhum membro encontrado.</li>
+                            )}
+                        </ul>
+                    </>
+                )}
+                <GetLastPosts />
+                <PostForm groupId={id as string} />
+            </Suspense>
         </div>
     );
 };

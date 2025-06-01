@@ -45,10 +45,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     useEffect(() => {
         const groupsByUserId = async () => {
-            console.log("Fetching groups...");
-            console.log("Session:", session);
             if (!session?.user?.accessToken) {
-                console.log("No access token available");
                 return;
             }
             try {

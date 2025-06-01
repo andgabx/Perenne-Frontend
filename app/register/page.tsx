@@ -35,14 +35,13 @@ export default function Home() {
 
     const handleSubmit = (data: Partial<typeof formData>) => {
         const finalData = { ...formData, ...data };
-        toast.success("Conta criada com sucesso!");
     };
 
     return (
         <div className="min-h-screen w-full bg-cover bg-no-repeat bg-[url('/bg.png')] bg-[position:100%_center]">
             <SiteHeader />
             <div className="flex items-center justify-center min-h-[calc(100vh-var(--header-height))]">
-                <Card className="rounded-2xl border-2 shadow-lg w-[90vw] md:w-[80vw] lg:w-[60vw] xl:w-[40vw] 2xl:w-[30vw] bg-white overflow-hidden">
+                <Card className="rounded-[44px] border-b-[10px] border-2 shadow-lg w-[52vw] h-[70vh]  bg-white overflow-hidden">
                     <div className="relative pt-6 pb-2 flex items-center justify-center w-full">
                         {step === 2 && (
                             <Button
