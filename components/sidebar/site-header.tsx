@@ -7,25 +7,21 @@ import { ThemeSwitcher } from "@/components/theme-switch";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 
-export function SiteHeader() {
+export function SiteHeader() { 
     const { data: session } = useSession();
     return (
-        <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b h-[var(--header-height)]">
-            <div className="flex w-full items-center justify-between px-4">
+        <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b h-[var(--header-height)] min-h-[80px] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.5)]">
+            <div className="flex w-full items-center justify-between px-[3vw]">
                 <Link href="/descoberta" className="flex items-center">
-                    <Image src="/logo.png" width={90} height={80} alt="Logo" />
+                    <Image src="/logo.png" width={150} height={150} alt="Logo" />
                 </Link>
                 {session && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-6">
                         <ThemeSwitcher />
 
-                        <Button variant="ghost" size="icon">
-                            <Bell className="h-5 w-5" />
-                        </Button>
-
                         <Link href="/settings">
-                            <Button variant="ghost" size="icon">
-                                <Settings className="h-5 w-5" />
+                            <Button variant="ghost" className="text-gray-400 flex items-center">
+                                <Settings className="size-[100%]" />
                             </Button>
                         </Link>
                     </div>
@@ -33,4 +29,9 @@ export function SiteHeader() {
             </div>
         </header>
     );
+    /*
+     <Button variant="ghost">
+        <Bell className="size-[100%]"/>
+    </Button>
+    */
 }

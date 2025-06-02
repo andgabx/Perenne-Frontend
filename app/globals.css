@@ -50,11 +50,10 @@
 }
 
 :root {
-    --button-primary: oklch(0.7 0.2 142);
     --radius: 0.625rem;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
-    --header-height: 3.5rem; /* 64px */
+    --header-height: clamp(60px, 10vh, 10vh);/*3.5rem;*/ /* 64px */
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);

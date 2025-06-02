@@ -6,6 +6,7 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
+    SidebarMenu,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import ChatSection from "./_components/chat-button";
@@ -18,33 +19,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     return (
         <Sidebar
-            className="h-[calc(100vh-var(--header-height))] sticky top-[var(--header-height)]"
+            className="w-[calc(23vw-var(--sidebar-left-padding))] h-[calc(100vh-var(--header-height))] sticky top-[var(--header-height)] flex flex-col"
             {...props}
         >
-            <SidebarContent className="flex flex-col space-y-6 py-4">
+            <SidebarContent className="flex-1 overflow-y-auto">
+                <SidebarMenu className="flex flex-col gap-0">
+                    <CreateSection />
+                    <Separator />
+                    <HomeSection />
+                    <Separator />
+                    <ChatSection />
+                </SidebarMenu>
 
-                <CreateSection />
-
-                <Separator className="" />
-
-                <HomeSection />
-
-                <Separator className="" />
-
-                <ChatSection />
-
-                <Separator className="" />
+                <Separator />
 
                 <CommunitySection />
 
-                <Separator className="" />
+                <Separator />
 
                 <ProjectsSection />
 
-                <Separator className="" />
+                <Separator />
             </SidebarContent>
 
-            <SidebarFooter>
+            <SidebarFooter className="shrink-0">
                 <UserSection />
             </SidebarFooter>
         </Sidebar>

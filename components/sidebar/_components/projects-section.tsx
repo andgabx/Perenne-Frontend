@@ -17,13 +17,13 @@ import Image from "next/image";
 
 const ProjectsSection = () => {
     return (
-        <Collapsible className="group/collapsible">
-            <SidebarGroup className="px-3">
+        <Collapsible className="group/collapsible w-full hover:bg-[#E7EFE854]">
+            <SidebarGroup>
                 <SidebarGroupLabel
                     asChild
                     className="group/label text-sm text-sidebar-foreground"
                 >
-                    <CollapsibleTrigger>
+                    <CollapsibleTrigger className="w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center">
                         <div className="flex items-center gap-2">
                             <Image
                                 src="/icons/projetos.svg"
@@ -40,7 +40,7 @@ const ProjectsSection = () => {
                     </CollapsibleTrigger>
                 </SidebarGroupLabel>
 
-                <CollapsibleContent>
+                <CollapsibleContent className="px-[3vw]">
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>

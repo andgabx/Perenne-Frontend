@@ -9,28 +9,24 @@ import Image from "next/image";
 
 const HomeSection = () => {
     return (
-        <SidebarGroup className="px-3">
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                        <Link href="/descoberta">
-                            <div className="flex items-center gap-2">
-                                <Image
-                                    src="/icons/home.svg"
-                                    alt="Home"
-                                    width={24}
-                                    height={24}
-                                    className="size-6"
-                                />
-                                <span className="font-bold text-lg text-primary">
-                                    INICIO
-                                </span>
-                            </div>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
+        <Link href="/descoberta" className="w-full h-[8vh] min-h-[60px] px-[3vw] hover:bg-[#E7EFE854] flex items-center">
+            <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                    <div>
+                        <Image
+                            src="/icons/home.svg"
+                            alt="Home"
+                            width={24}
+                            height={24}
+                            className="size-6"
+                        />
+                        <span className="font-bold text-lg text-primary">
+                            INÍCIO
+                        </span>
+                    </div>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+        </Link>
     );
 };
 

@@ -1,8 +1,7 @@
 export function AboutSection() {
     return (
-        <section className="bg-white py-16 md:py-24 lg:py-32">
-            <div className="container flex mx-auto px-6 md:px-12 lg:px-20">
-                <div className="max-w-4xl">
+            <div className="flex justify-between mx-auto max-w-[80vw] py-12">
+                <div className="max-w-5xl">
 
                     <p className="text-gray-400 text-xl md:text-2xl font-medium tracking-wider uppercase mb-6">
                         SOBRE NÓS
@@ -17,7 +16,7 @@ export function AboutSection() {
                         Investimentos Sustentáveis
                     </h3>
 
-                    <p className="text-gray-700 text-lg md:text-xl leading-relaxed max-w-3xl">
+                    <p className="text-gray-700 text-lg md:text-xl leading-relaxed max-w-2xl">
                         Atuamos como uma rede nacional que conecta
                         profissionais, acadêmicos e organizações comprometidas
                         com a construção de um Brasil mais justo, ético e
@@ -35,6 +34,5 @@ export function AboutSection() {
                     </div>
                 </div>
             </div>
-        </section>
     );
 }

@@ -7,7 +7,7 @@ export function HeroSection() {
                 <section className="h-[59vh] bg-[url('/bglandingpage.png')] overflow-hidden bg-cover bg-center bg-no-repeat w-full rounded-[38px] mt-8">
                     <div className="flex flex-col bg-gray-200/93 aspect-square translate-y-[7%] overflow-hidden h-[70vh] w-[60vw] ml-[5%] rounded-[44px] text-black items-center justify-center">
                         <div className="flex flex-col px-12 translate-y-[-20%] space-y-6">
-                            <h1 className="md:text-6xl lg:text-7xl text-[#24bd0a] font-bold">
+                            <h1 className="md:text-6xl xl:text-7xl 2xl:text-8xl	 text-[#24bd0a] font-bold">
                                 Unindo líderes para transformar o Brasil com
                                 finanças sustentáveis
                             </h1>
