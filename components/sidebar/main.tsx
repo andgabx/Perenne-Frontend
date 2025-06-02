@@ -21,7 +21,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             className="h-[calc(100vh-var(--header-height))] sticky top-[var(--header-height)]"
             {...props}
         >
-            <SidebarContent className="flex flex-col py-4 space-y-4">
+            <SidebarContent className="flex flex-col space-y-6 py-4">
 
                 <CreateSection />
 
@@ -42,7 +42,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <ProjectsSection />
 
                 <Separator className="" />
-
             </SidebarContent>
 
             <SidebarFooter>

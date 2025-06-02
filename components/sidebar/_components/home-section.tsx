@@ -8,7 +8,6 @@ import {
 import Image from "next/image";
 
 const HomeSection = () => {
-
     return (
         <SidebarGroup className="px-3">
             <SidebarMenu>
@@ -33,7 +32,6 @@ const HomeSection = () => {
             </SidebarMenu>
         </SidebarGroup>
     );
-
 };
 
 export default HomeSection;

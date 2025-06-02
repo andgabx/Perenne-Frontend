@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 
 const CreateSection = () => {
     return ( 
-        <SidebarGroup className="px-3">
+        <SidebarGroup className="px-3 hover:bg-[#E7EFE854]">
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild>
