@@ -1,28 +1,40 @@
 export function AboutSection() {
     return (
-      <section className="w-full py-12 md:py-24 border-y">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center px-[15vw]">
-          <div className="flex flex-col space-y-4">
-            <h2 className="text-4xl font-bold tracking-tight">Sobre Nós</h2>
-            <p className="text-xl text-gray-500">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-              dolore magna aliqua.
-            </p>
-          </div>
-  
-          <div className="flex justify-center">
-            <div className="relative w-full max-h-[50vh] aspect-square rounded-lg border overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-24 h-24 flex flex-col items-center justify-center">
-                  <div className="w-4 h-4 rounded-full border border-black mb-2"></div>
-                  <div className="w-full h-px bg-black transform rotate-45 translate-y-4"></div>
-                  <div className="w-full h-px bg-black transform -rotate-45 translate-y-4"></div>
+        <section className="bg-white py-16 md:py-24 lg:py-32">
+            <div className="container flex mx-auto px-6 md:px-12 lg:px-20">
+                <div className="max-w-4xl">
+
+                    <p className="text-gray-400 text-xl md:text-2xl font-medium tracking-wider uppercase mb-6">
+                        SOBRE NÓS
+                    </p>
+
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#3C6C0C] leading-tight mb-8">
+                        A aliança por trás da transformação
+                    </h2>
+
+                    <h3 className="text-xl md:text-2xl font-semibold text-[#24BD0A] mb-6">
+                        Somos a BRASFI – Aliança Brasileira para Finanças e
+                        Investimentos Sustentáveis
+                    </h3>
+
+                    <p className="text-gray-700 text-lg md:text-xl leading-relaxed max-w-3xl">
+                        Atuamos como uma rede nacional que conecta
+                        profissionais, acadêmicos e organizações comprometidas
+                        com a construção de um Brasil mais justo, ético e
+                        ambientalmente responsável. Promovemos a formação de
+                        lideranças e o desenvolvimento de soluções inovadoras
+                        que usam as finanças como ferramenta de transformação
+                        positiva.
+                    </p>
                 </div>
-              </div>
+                <div className="flex flex-col">
+                    <div className="flex flex-col">
+                        <h1 className="text-2xl font-bold">
+                            A BRASFI é uma aliança nacional que conecta
+                        </h1>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
-  
+        </section>
+    );
+}
