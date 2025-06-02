@@ -9,6 +9,7 @@ const heebo = Heebo({
     subsets: ["latin"],
 });
 
+
 export const metadata: Metadata = {
     title: "Brasfi",
     description: "Plataforma Brasfi",

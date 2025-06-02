@@ -40,7 +40,7 @@ export function Header() {
                     </Link>
                 </nav>
 
-                    <Button className="bg-[#24bd0a] md:inline-flex">
+                    <Button className="bg-[#24bd0a] px-4">
                         Nossa plataforma
                     </Button>
 
