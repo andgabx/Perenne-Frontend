@@ -1,6 +1,6 @@
 export function AboutSection() {
     return (
-            <div className="flex justify-between mx-auto max-w-[80vw] py-12">
+            <div id="sobre" className="flex flex-col sm:flex-row justify-between mx-auto max-w-[80vw] py-12">
                 <div className="max-w-5xl">
 
                     <p className="text-gray-400 text-xl md:text-2xl font-medium tracking-wider uppercase mb-6">

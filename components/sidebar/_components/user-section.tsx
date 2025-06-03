@@ -55,7 +55,6 @@ export function UserSection() {
                             {session?.user.name}
                         </span>
                     </div>
-                    <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -81,7 +80,7 @@ export function UserSection() {
                         </div>
                     </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                {/* <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem>
                         <Settings />
@@ -103,7 +102,7 @@ export function UserSection() {
                         Política de privacidade
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator /> */}
                 <DropdownMenuItem asChild className="w-full">
                     <Button
                         variant="ghost"

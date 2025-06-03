@@ -1,15 +1,16 @@
 "use client";
 
-import { SiteHeader } from "@/components/sidebar/site-header";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { getUserInfo } from "@/pages/api/user/get-user-info";
-import UserSettingsButton from "./_components/user-settings-button";
-import UserMain from "./_components/user-main";
-import DeleteUserButton from "./_components/delete-user-button";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { SiteHeader } from "@/components/sidebar/site-header";
+import UserHeader from "./_components/user-header";
+import UserInfoCard from "./_components/user-info-card";
 
-export default function SettingsPage() {
+const UserSettings = () => {
     const { data: session } = useSession();
     const [userInfo, setUserInfo] = useState<any>(null);
     const router = useRouter();
@@ -38,13 +39,10 @@ export default function SettingsPage() {
     return (
         <div className="min-h-screen bg-[url('/bg.png')] bg-cover bg-center">
             <SiteHeader />
-            <div className="container mx-auto p-6 max-w-[50vw] space-y-10">
-                <UserMain />
-                <UserSettingsButton />
-                <div className="py-48">
-                    <DeleteUserButton />
-                </div>
-            </div>
+            <UserHeader />
+            <UserInfoCard />
         </div>
     );
-}
+};
+
+export default UserSettings;

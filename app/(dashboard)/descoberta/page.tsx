@@ -5,14 +5,17 @@ import ProjectsCarousel from "./_components/projects-carousel";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Descoberta() {
     const { data: session } = useSession();
     const router = useRouter();
 
-    if (!session) {
-        router.push("/login");
-    }
+    useEffect(() => {
+        if (!session) {
+          router.push("/login");
+        }
+      }, [session, router]);
 
     return (
         <div className="">

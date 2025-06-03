@@ -15,34 +15,36 @@ export function Header() {
 
                 <nav className="hidden md:flex items-center space-x-14 px-8">
                     <Link
-                        href="/"
+                        href="#inicio"
                         className="text-base font-medium hover:text-gray-600 transition-colors"
                     >
                         Início
                     </Link>
                     <Link
-                        href="/sobre"
+                        href="#sobre"
                         className="text-base font-medium hover:text-gray-600 transition-colors"
                     >
                         Sobre nós
                     </Link>
                     <Link
-                        href="/missao"
+                        href="#missao"
                         className="text-base font-medium hover:text-gray-600 transition-colors"
                     >
                         Missão
                     </Link>
                     <Link
-                        href="/contato"
+                        href="#contato"
                         className="text-base font-medium hover:text-gray-600 transition-colors"
                     >
                         Contato
                     </Link>
                 </nav>
 
-                    <Button className="bg-[#24bd0a] px-4">
-                        Nossa plataforma
-                    </Button>
+                    <Link href="/login">
+                        <Button className="bg-[#24bd0a] px-4 hover:scale-105 transition-all duration-300">
+                            Nossa plataforma
+                        </Button>
+                    </Link>
 
                     {/* <ThemeSwitcher /> */}
                 </div>

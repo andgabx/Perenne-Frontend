@@ -1,15 +1,12 @@
 "use client";
 
-import { SiteHeader } from "@/components/sidebar/site-header";
+import { getUserInfo } from "@/pages/api/user/get-user-info";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getUserInfo } from "@/pages/api/user/get-user-info";
-import UserSettingsButton from "./_components/user-settings-button";
-import UserMain from "./_components/user-main";
-import DeleteUserButton from "./_components/delete-user-button";
 
-export default function SettingsPage() {
+const UserMain = () => {
+
     const { data: session } = useSession();
     const [userInfo, setUserInfo] = useState<any>(null);
     const router = useRouter();
@@ -36,15 +33,16 @@ export default function SettingsPage() {
     }, [session]);
 
     return (
-        <div className="min-h-screen bg-[url('/bg.png')] bg-cover bg-center">
-            <SiteHeader />
-            <div className="container mx-auto p-6 max-w-[50vw] space-y-10">
-                <UserMain />
-                <UserSettingsButton />
-                <div className="py-48">
-                    <DeleteUserButton />
+        <section className="h-[10vh] bg-yellow-300 translate-y-[10%] w-full rounded-[38px] ">
+            <section className="h-[9vh] bg-white overflow-hidden w-full rounded-[38px] mt-8">
+                <div className="flex flex-col items-center justify-center mx-auto h-full w-[40vw]">
+                    <h1 className="text-green-900 text-sm xs:text-md sm:text-xl md:text-2xl font-bold break-words text-center">
+                        {userInfo?.firstName} {userInfo?.lastName}
+                    </h1>
                 </div>
-            </div>
-        </div>
+            </section>
+        </section>
     );
-}
+};
+
+export default UserMain;

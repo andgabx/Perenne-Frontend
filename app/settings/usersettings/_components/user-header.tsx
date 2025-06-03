@@ -1,15 +1,11 @@
-"use client";
-
-import { SiteHeader } from "@/components/sidebar/site-header";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getUserInfo } from "@/pages/api/user/get-user-info";
-import UserSettingsButton from "./_components/user-settings-button";
-import UserMain from "./_components/user-main";
-import DeleteUserButton from "./_components/delete-user-button";
+import { Pencil } from "lucide-react";
 
-export default function SettingsPage() {
+const UserHeader = () => {
+
     const { data: session } = useSession();
     const [userInfo, setUserInfo] = useState<any>(null);
     const router = useRouter();
@@ -36,15 +32,17 @@ export default function SettingsPage() {
     }, [session]);
 
     return (
-        <div className="min-h-screen bg-[url('/bg.png')] bg-cover bg-center">
-            <SiteHeader />
-            <div className="container mx-auto p-6 max-w-[50vw] space-y-10">
-                <UserMain />
-                <UserSettingsButton />
-                <div className="py-48">
-                    <DeleteUserButton />
+        <section className="h-[10vh] bg-yellow-300 translate-y-[10%] w-full max-w-[50vw] mx-auto rounded-[38px] ">
+            <section className="h-[9vh] bg-white overflow-hidden w-full rounded-[38px] mt-8">
+                <div className="flex items-center justify-center mx-auto h-full w-[40vw] gap-6">
+                    <h1 className="text-green-900 text-lg xs:text-md sm:text-xl md:text-3xl font-bold break-words text-center">
+                        {userInfo?.firstName} {userInfo?.lastName}
+                    </h1>
+                    <Pencil className="w-7 h-7 text-green-900" />
                 </div>
-            </div>
-        </div>
+            </section>
+        </section>
     );
-}
+};
+ 
+export default UserHeader;
