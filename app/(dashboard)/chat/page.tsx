@@ -279,6 +279,7 @@ export default function ChatInterface() {
                                     onSendMessage={handleSendChatMessage}
                                     isSendingMessage={isSendingMessage}
                                     onClose={() => setSelectedCommunity(null)}
+                                    currentUserId={session?.user.id || ""}
                                 />
                             ) : (
                                 <EmptyWindow />
