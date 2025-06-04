@@ -1,4 +1,4 @@
-const DeleteUserButton = () => {
+const DeactivateButton = () => {
     return (
         <section
             id="inicio"
@@ -7,12 +7,12 @@ const DeleteUserButton = () => {
             <section className="h-[9vh] bg-[#FCB201] overflow-hidden w-full rounded-[38px] mt-8">
                 <div className="flex flex-col items-center justify-center h-full mx-auto w-[40vw]">
                     <h1 className="text-black text-sm xs:text-md sm:text-xl md:text-2xl font-bold break-words">
-                        DESATIVAR ESSA BIROSCA{" "}
+                        DESLOGAR PELO AMOR DE DEUS
                     </h1>
                 </div>
             </section>
         </section>
     );
-};
-
-export default DeleteUserButton;
+}
+ 
+export default DeactivateButton;

@@ -14,24 +14,16 @@ import ChatWindow from "../../chat/_components/chat-window";
 import type { ChatMessageType } from "../../chat/_components/chat-window";
 import CreateGroupForm from "./_components/create-group-form";
 import GroupList from "./_components/group-list";
+import { getHeaders } from "@/pages/api/headers";
 
 const GroupPage = () => {
     const { data: session, status } = useSession();
     const router = useRouter();
-
-    // State for CreateGroupForm is now internal to that component
-    // const [name, setName] = useState("");
-    // const [description, setDescription] = useState("");
-
     const [allGroups, setAllGroups] = useState<GroupType[]>([]);
     const [myGroups, setMyGroups] = useState<GroupType[]>([]);
     const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
-    const [currentChannelId, setCurrentChannelId] = useState<string | null>(
-        null
-    );
+    const [currentChannelId, setCurrentChannelId] = useState<string | null>(null);
     const connectionRef = useRef<signalR.HubConnection | null>(null);
-
-    // Loading states
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);
     const [isLoadingAllGroups, setIsLoadingAllGroups] = useState(false);
     const [isLoadingMyGroups, setIsLoadingMyGroups] = useState(false);
@@ -55,10 +47,7 @@ const GroupPage = () => {
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/user/getgroups`,
                 {
-                    headers: {
-                        Authorization: `Bearer ${session.user.accessToken}`,
-                        "ngrok-skip-browser-warning": "69420",
-                    },
+                    headers: getHeaders(session.user.accessToken),
                 }
             );
             if (!response.ok) {
@@ -94,11 +83,7 @@ const GroupPage = () => {
                 `${process.env.NEXT_PUBLIC_API_URL}/api/group/getall`,
                 {
                     method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session.user.accessToken}`,
-                        "ngrok-skip-browser-warning": "69420",
-                    },
+                    headers: getHeaders(session.user.accessToken),
                 }
             );
             if (!response.ok) {
@@ -171,7 +156,7 @@ const GroupPage = () => {
             ) => {
                 setChatMessages((prevMessages) => [
                     ...prevMessages,
-                    { user, message, createdAt, senderUserId },
+                    { userId: user, user, message, createdAt, senderUserId },
                 ]);
             }
         );
@@ -225,11 +210,7 @@ const GroupPage = () => {
                 `${process.env.NEXT_PUBLIC_API_URL}/api/group/create`,
                 {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session.user.accessToken}`,
-                        "ngrok-skip-browser-warning": "69420",
-                    },
+                    headers: getHeaders(session.user.accessToken),
                     body: JSON.stringify({ name, description }),
                 }
             );
@@ -262,10 +243,7 @@ const GroupPage = () => {
                 `${process.env.NEXT_PUBLIC_API_URL}/api/group/${groupId}/join`,
                 {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session.user.accessToken}`,
-                    },
+                    headers: getHeaders(session.user.accessToken),
                 }
             );
 

@@ -8,6 +8,8 @@ import { getUserInfo } from "@/pages/api/user/get-user-info";
 import UserSettingsButton from "./_components/user-settings-button";
 import UserMain from "./_components/user-main";
 import DeleteUserButton from "./_components/delete-user-button";
+import Link from "next/link";
+import DeactivateButton from "./_components/deactivate-button";
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -39,10 +41,15 @@ export default function SettingsPage() {
         <div className="min-h-screen bg-[url('/bg.png')] bg-cover bg-center">
             <SiteHeader />
             <div className="container mx-auto p-6 max-w-[50vw] space-y-10">
-                <UserMain />
-                <UserSettingsButton />
+                <div className="hover:scale-105 transition-all duration-300">
+                    <Link href="/settings/usersettings">
+                        <UserMain />
+                    </Link>
+                </div>
+                {/* <UserSettingsButton /> */}
                 <div className="py-48">
                     <DeleteUserButton />
+                    <DeactivateButton />
                 </div>
             </div>
         </div>
