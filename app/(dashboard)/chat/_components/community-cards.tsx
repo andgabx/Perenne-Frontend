@@ -23,6 +23,11 @@ const CommunityCard = ({
     return (
         <ScrollArea className="h-[90%]">
             <div className="space-y-2 p-4">
+                {groups.length === 0 && (
+                    <div className="flex items-center justify-center h-full">
+                        <p className="text-gray-500">Você ainda não está em nenhuma comunidade</p>
+                    </div>
+                )}
                 {groups.map((community) => (
                     <div
                         key={community.id}

@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switch";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 export function SiteHeader() { 
     const { data: session } = useSession();
+    const pathname = usePathname();
     return (
         <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b h-[var(--header-height)] min-h-[80px] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.5)]">
             <div className="flex w-full items-center justify-between px-[3vw]">
@@ -20,9 +22,15 @@ export function SiteHeader() {
                         <ThemeSwitcher />
 
                         <Link href="/settings">
-                            <Button variant="ghost" className="text-gray-400 flex items-center">
-                                <Settings className="size-[100%]" />
-                            </Button>
+                            {pathname === "/settings" ? (
+                                <Button variant="ghost" className="text-green-500 flex items-center hover:scale-105 transition-all duration-300 hover:animate-spin">
+                                    <Settings className="size-[100%]" />
+                                </Button>
+                            ) : (
+                                <Button variant="ghost" className="text-gray-400 flex items-center hover:scale-105 transition-all duration-300 hover:animate-spin">
+                                    <Settings className="size-[100%]" />
+                                </Button>
+                            )}
                         </Link>
                     </div>
                 )}

@@ -7,7 +7,7 @@ import { Send, X } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
-
+import { ScrollArea } from "@/components/ui/scroll-area";
 export interface ChatMessage {
     userId: string;
     user: string;
@@ -78,7 +78,7 @@ const ChatWindow = ({
                         const isCurrentUser =
                             msg.senderUserId === currentUserId;
                         return (
-                            <div
+                            <ScrollArea
                                 key={index}
                                 className={`flex gap-2 items-end mb-4 ${
                                     isCurrentUser ? "flex-row-reverse" : ""
@@ -166,7 +166,7 @@ const ChatWindow = ({
                                         {msg.message}
                                     </div>
                                 </div>
-                            </div>
+                            </ScrollArea>
                         );
                     })
                 )}

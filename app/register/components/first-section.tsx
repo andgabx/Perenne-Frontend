@@ -9,10 +9,12 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
+import * as React from "react";
+import { useNavigation } from "react-day-picker";
 
 interface StepOneProps {
     initialData: {
@@ -25,6 +27,81 @@ interface StepOneProps {
         sobrenome: string;
         dataNascimento: string;
     }) => void;
+}
+
+// Componente para selecionar o ano no cabeçalho do calendário
+function YearMonthPicker({ displayMonth }: { displayMonth: Date }) {
+    const { goToMonth, nextMonth, previousMonth } = useNavigation();
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = currentYear; i >= 1900; i--) {
+        years.push(i);
+    }
+    const months = [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro",
+    ];
+
+    return (
+        <div className="flex gap-2 items-center justify-center py-2">
+            <button
+                type="button"
+                onClick={() => previousMonth && goToMonth(previousMonth)}
+                disabled={!previousMonth}
+                className="p-1"
+                aria-label="Mês anterior"
+            >
+                <ChevronLeft className="w-5 h-5" />
+            </button>
+            <select
+                value={displayMonth.getMonth()}
+                onChange={(e) => {
+                    const newDate = new Date(displayMonth);
+                    newDate.setMonth(Number(e.target.value));
+                    goToMonth(newDate);
+                }}
+                className="border rounded px-2 py-1"
+            >
+                {months.map((month, idx) => (
+                    <option key={month} value={idx}>
+                        {month}
+                    </option>
+                ))}
+            </select>
+            <select
+                value={displayMonth.getFullYear()}
+                onChange={(e) => {
+                    const newDate = new Date(displayMonth);
+                    newDate.setFullYear(Number(e.target.value));
+                    goToMonth(newDate);
+                }}
+                className="border rounded px-2 py-1"
+            >
+                {years.map((year) => (
+                    <option key={year}>{year}</option>
+                ))}
+            </select>
+            <button
+                type="button"
+                onClick={() => nextMonth && goToMonth(nextMonth)}
+                disabled={!nextMonth}
+                className="p-1"
+                aria-label="Próximo mês"
+            >
+                <ChevronRight className="w-5 h-5" />
+            </button>
+        </div>
+    );
 }
 
 export default function StepOne({ initialData, onContinue }: StepOneProps) {
@@ -103,7 +180,7 @@ export default function StepOne({ initialData, onContinue }: StepOneProps) {
                             <PopoverTrigger asChild>
                                 <Button
                                     className={cn(
-                                        "w-full justify-between text-left font-normal border-2 text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] hover:bg-[#FFE29D]/90",
+                                        "w-full justify-between text-left font-normal px-3 border-2 text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2e7d32] hover:bg-[#FFE29D]/90",
                                         !dataNascimento && "text-gray-500"
                                     )}
                                 >
@@ -131,6 +208,15 @@ export default function StepOne({ initialData, onContinue }: StepOneProps) {
                                     }
                                     initialFocus
                                     className="bg-card rounded-md" // background do calendario em si
+                                    components={{
+                                        Caption: (props) => (
+                                            <YearMonthPicker
+                                                displayMonth={
+                                                    props.displayMonth
+                                                }
+                                            />
+                                        ),
+                                    }}
                                 />
                             </PopoverContent>
                         </Popover>

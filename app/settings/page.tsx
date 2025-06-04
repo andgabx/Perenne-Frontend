@@ -5,11 +5,10 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getUserInfo } from "@/pages/api/user/get-user-info";
-import UserSettingsButton from "./_components/user-settings-button";
 import UserMain from "./_components/user-main";
-import DeleteUserButton from "./_components/delete-user-button";
 import Link from "next/link";
 import DeactivateButton from "./_components/deactivate-button";
+import LogoutUserButton from "./_components/logout-user-button";
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -48,7 +47,7 @@ export default function SettingsPage() {
                 </div>
                 {/* <UserSettingsButton /> */}
                 <div className="py-48">
-                    <DeleteUserButton />
+                    <LogoutUserButton />
                     <DeactivateButton />
                 </div>
             </div>

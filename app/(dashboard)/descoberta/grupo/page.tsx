@@ -207,7 +207,7 @@ const GroupPage = () => {
         setIsCreatingGroup(true);
         try {
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/group/create`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/systemadmin/creategroup`,
                 {
                     method: "POST",
                     headers: getHeaders(session.user.accessToken),
