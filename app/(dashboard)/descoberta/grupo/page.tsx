@@ -398,6 +398,7 @@ const GroupPage = () => {
             </div>
             {currentChannelId && (
                 <ChatWindow
+                    currentUserId={session?.user.id || ""}
                     currentGroup={currentGroupForChat}
                     currentChannelId={currentChannelId}
                     messages={chatMessages}
