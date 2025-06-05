@@ -1,293 +1,308 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; //
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; //
-import { Input } from "@/components/ui/input"; //
-import { Users, MessageCircle } from "lucide-react"; //
-// import { getHeaders } from "@/pages/api/headers"; // Removido se não usado diretamente aqui
-import toast from "react-hot-toast"; //
-import { GroupType } from "../descoberta/grupo/_components/group-list-item"; //
-import { useSession } from "next-auth/react"; //
-import { useRouter } from "next/navigation"; //
-import CommunityCard from "./_components/community-cards"; //
-import { getGroups } from "@/pages/api/group/get-group-by-user"; //
-import ChatWindow from "./_components/chat-window"; //
-import * as signalR from "@microsoft/signalr"; //
-import type { ChatMessageType } from "./_components/chat-window"; //
-import EmptyWindow from "./_components/empty-window"; //
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Users, MessageCircle } from "lucide-react";
+import toast from "react-hot-toast";
+import { GroupType } from "../descoberta/grupo/_components/group-list-item";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import CommunityCard from "./_components/community-cards";
+import { getGroups } from "@/pages/api/group/get-group-by-user";
+import ChatWindow from "./_components/chat-window";
+import * as signalR from "@microsoft/signalr";
+import type { ChatMessageType } from "./_components/chat-window";
+import EmptyWindow from "./_components/empty-window";
 import PrivateUserChat from "./_components/privateuserchat"; // Importando o componente de chat privado
 
 export default function ChatInterface() {
-    const { data: session, status } = useSession(); //
-    const router = useRouter(); //
-    const [groups, setGroups] = useState<GroupType[]>([]); //
-    const [selectedCommunity, setSelectedCommunity] = useState<string | null>(
-        null
-    ); //
-    const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]); //
-    const [currentChannelId, setCurrentChannelId] = useState<string | null>(
-        null
-    ); //
-    const [isSendingMessage, setIsSendingMessage] = useState(false); //
-    const [searchQuery, setSearchQuery] = useState(""); //
-    const connectionRef = useRef<signalR.HubConnection | null>(null); //
+    const { data: session, status } = useSession();
+    const router = useRouter();
+    const [groups, setGroups] = useState<GroupType[]>([]);
+    const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
+    const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]); // Messages for group chat
+    const [currentChannelId, setCurrentChannelId] = useState<string | null>(null); // For group chat
+    const [isSendingMessage, setIsSendingMessage] = useState(false); // For group chat
+    const [searchQuery, setSearchQuery] = useState("");
+    
+    // SignalR connection for GROUP chats
+    const groupChatConnectionRef = useRef<signalR.HubConnection | null>(null);
 
     useEffect(() => {
-        if (status === "authenticated" && session?.user?.accessToken) { //
-            getGroups(session.user.accessToken).then((data) => { //
+        if (status === "authenticated" && session?.user?.accessToken) {
+            getGroups(session.user.accessToken).then((data) => {
                 setGroups(
-                    data.map((g) => ({ //
+                    data.map((g) => ({
                         ...g,
-                        description: (g as any).description || "", //
+                        description: (g as any).description || "",
                     }))
                 );
             });
         }
-    }, [status, session]); //
+    }, [status, session]);
 
     useEffect(() => {
-        if (status === "unauthenticated") { //
-            router.push("/login"); //
+        if (status === "unauthenticated") {
+            router.push("/login");
         }
-    }, [status, router]); //
+    }, [status, router]);
 
+    // useEffect for GROUP CHAT SignalR connection
     useEffect(() => {
-        if (status !== "authenticated" || !session?.user.accessToken) { //
-            if (connectionRef.current) { //
-                connectionRef.current.stop(); //
-                connectionRef.current = null; //
+        if (status !== "authenticated" || !session?.user.accessToken) {
+            if (groupChatConnectionRef.current && groupChatConnectionRef.current.state === signalR.HubConnectionState.Connected) {
+                groupChatConnectionRef.current.stop()
+                    .then(() => console.log("SignalR (Group) Connection stopped due to session/status change."))
+                    .catch(err => console.error("Error stopping SignalR (Group) connection:", err));
             }
-            return; //
+            groupChatConnectionRef.current = null;
+            return;
         }
 
-        const newConnection = new signalR.HubConnectionBuilder() //
-            .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/chathub`, { //
-                accessTokenFactory: () => session.user.accessToken!, //
-            })
-            .withAutomaticReconnect() //
-            .build(); //
+        if (!groupChatConnectionRef.current || groupChatConnectionRef.current.state === signalR.HubConnectionState.Disconnected) {
+            const newGroupConnection = new signalR.HubConnectionBuilder()
+                .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/chathub`, { // Connects to the general chathub
+                    accessTokenFactory: () => session.user.accessToken!,
+                })
+                .withAutomaticReconnect()
+                .build();
 
-        newConnection.onclose((error) => { //
-            console.log("SignalR Connection closed.", error); //
-        });
+            newGroupConnection.onclose((error) => {
+                console.log("SignalR (Group) Connection closed.", error);
+            });
 
-        newConnection.on( //
-            "ReceiveMessage",
-            (
-                user: string, //
-                message: string, //
-                createdAt: string, //
-                senderUserId: string //
-            ) => {
-                setChatMessages((prevMessages) => [ //
-                    ...prevMessages,
-                    { userId: user, user, message, createdAt, senderUserId }, //
-                ]);
-            }
-        );
-
-        newConnection
-            .start() //
-            .then(() => {
-                console.log("SignalR Connected."); //
-                connectionRef.current = newConnection; //
-                if (
-                    currentChannelId && //
-                    newConnection.state === signalR.HubConnectionState.Connected //
-                ) {
-                    newConnection
-                        .invoke("JoinChannel", currentChannelId) //
-                        .then(() =>
-                            console.log( //
-                                `Joined channel ${currentChannelId} on connect.`
-                            )
-                        )
-                        .catch((err) =>
-                            console.error( //
-                                `Error joining channel ${currentChannelId}:`,
-                                err
-                            )
-                        );
+            // Listener for group messages
+            newGroupConnection.on(
+                "ReceiveMessage", // This is for group messages
+                (
+                    user: string, // Display name of sender
+                    message: string,
+                    createdAt: string,
+                    senderUserId: string // Actual User ID of sender
+                ) => {
+                    // Only add if it's for the currently selected group chat
+                    if (currentChannelId && groupChatConnectionRef.current?.connectionId) { // Check if this message belongs to current group
+                         setChatMessages((prevMessages) => [
+                            ...prevMessages,
+                            { userId: senderUserId, user, message, createdAt, senderUserId },
+                        ]);
+                    }
                 }
-            })
-            .catch((err) => console.error("SignalR Connection Error: ", err)); //
+            );
 
+            newGroupConnection
+                .start()
+                .then(() => {
+                    console.log("SignalR (Group) Connected.");
+                    groupChatConnectionRef.current = newGroupConnection;
+                    // If a channel was already selected, join it
+                    if (currentChannelId && newGroupConnection.state === signalR.HubConnectionState.Connected) {
+                        newGroupConnection
+                            .invoke("JoinChannel", currentChannelId)
+                            .then(() =>
+                                console.log(
+                                    `Joined group channel ${currentChannelId} on connect.`
+                                )
+                            )
+                            .catch((err) =>
+                                console.error(
+                                    `Error joining group channel ${currentChannelId}:`,
+                                    err
+                                )
+                            );
+                    }
+                })
+                .catch((err) => console.error("SignalR (Group) Connection Error: ", err));
+        }
+        
+        // Cleanup for GROUP CHAT connection
         return () => {
-            if (newConnection) { //
-                newConnection.stop(); //
-                console.log("SignalR Connection stopped on cleanup."); //
+             if (groupChatConnectionRef.current && 
+                (status !== "authenticated" || !session?.user?.accessToken)) {
+                groupChatConnectionRef.current.stop()
+                    .then(() => console.log("SignalR (Group) Connection stopped on cleanup."))
+                    .catch(err => console.error("Error stopping SignalR (Group) connection on cleanup:", err));
+                groupChatConnectionRef.current = null;
             }
         };
-    }, [status, session, currentChannelId]); //
+    }, [status, session]); // currentChannelId removed from here, join/leave handled in handleOpenChat
 
-    const handleOpenChat = async (groupId: string) => { //
-        if (status !== "authenticated" || !session?.user?.accessToken) { //
-            toast.error("Você precisa estar logado para entrar no chat"); //
-            return; //
+
+    const handleOpenChat = async (groupId: string) => { // For GROUP chats
+        if (status !== "authenticated" || !session?.user?.accessToken) {
+            toast.error("Você precisa estar logado para entrar no chat");
+            return;
         }
-        if (
-            !connectionRef.current || //
-            connectionRef.current.state !== signalR.HubConnectionState.Connected //
-        ) {
-            toast.error( //
-                "Conexão de chat não está ativa. Tentando reconectar..."
-            );
-            if (
-                connectionRef.current && //
-                connectionRef.current.state !== //
-                    signalR.HubConnectionState.Connecting //
-            ) {
-                try {
-                    await connectionRef.current.start(); //
-                    console.log("SignalR reconnected for opening chat."); //
-                } catch (err) {
-                    toast.error("Falha ao reconectar ao chat."); //
-                    console.error("SignalR Reconnection Error: ", err); //
-                    return; //
-                }
-            } else if (!connectionRef.current) { //
-                toast.error("Conexão de chat não iniciada."); //
-                return; //
+        
+        const connection = groupChatConnectionRef.current;
+        if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+            toast.error("Conexão de chat não está ativa. Tentando reconectar...");
+            try {
+                await connection?.start();
+                 if (connection?.state !== signalR.HubConnectionState.Connected){
+                    toast.error("Falha ao reconectar ao chat.");
+                    return;
+                 }
+                console.log("SignalR (Group) reconnected for opening chat.");
+            } catch (err) {
+                toast.error("Falha ao reconectar ao chat.");
+                console.error("SignalR (Group) Reconnection Error: ", err);
+                return;
             }
         }
-        if (
-            currentChannelId && //
-            currentChannelId !== groupId && //
-            connectionRef.current?.state === //
-                signalR.HubConnectionState.Connected //
-        ) {
-            await connectionRef.current.invoke( //
-                "LeaveChannel",
-                currentChannelId
-            );
-            console.log(`Left previous channel: ${currentChannelId}`); //
+
+        // Leave previous group channel if different
+        if (currentChannelId && currentChannelId !== groupId && connection.state === signalR.HubConnectionState.Connected) {
+            try {
+                await connection.invoke("LeaveChannel", currentChannelId);
+                console.log(`Left previous group channel: ${currentChannelId}`);
+            } catch (err) {
+                console.error(`Error leaving group channel ${currentChannelId}:`, err);
+            }
         }
-        if (
-            connectionRef.current?.state === //
-            signalR.HubConnectionState.Connected //
-        ) {
-            await connectionRef.current.invoke("JoinChannel", groupId); //
-            setCurrentChannelId(groupId); //
-            setChatMessages([]); //
-            setSelectedCommunity(groupId); //
-            console.log(`Juntou-se ao canal SignalR: ${groupId}`); //
+        
+        // Join new group channel
+        if (connection.state === signalR.HubConnectionState.Connected) {
+             try {
+                await connection.invoke("JoinChannel", groupId);
+                setCurrentChannelId(groupId); // Set the new channel ID for group chat
+                setChatMessages([]); // Clear messages from previous group chat
+                setSelectedCommunity(groupId);
+                console.log(`Juntou-se ao canal SignalR (Grupo): ${groupId}`);
+                // TODO: Fetch history for the new group channel if needed
+            } catch (err) {
+                 console.error(`Error joining group channel ${groupId}:`, err);
+                 toast.error("Não foi possível conectar ao canal do chat de grupo.");
+            }
         } else {
-            console.warn("Cannot join channel, SignalR not connected."); //
-            toast.error("Não foi possível conectar ao canal do chat."); //
+            console.warn("Cannot join group channel, SignalR not connected.");
+            toast.error("Não foi possível conectar ao canal do chat de grupo.");
         }
     };
 
-    const handleSendChatMessage = async ( //
-        message: string, //
-        channelId: string //
+    const handleSendChatMessage = async ( // For GROUP chats
+        message: string,
+        channelId: string // This should be the groupId for group chats
     ) => {
         if (
-            !message.trim() || //
-            !channelId || //
-            !connectionRef.current || //
-            connectionRef.current.state !== signalR.HubConnectionState.Connected //
+            !message.trim() ||
+            !channelId ||
+            !groupChatConnectionRef.current ||
+            groupChatConnectionRef.current.state !== signalR.HubConnectionState.Connected
         ) {
-            toast.error("Não é possível enviar mensagem."); //
-            return; //
+            toast.error("Não é possível enviar mensagem para o grupo.");
+            return;
         }
-        setIsSendingMessage(true); //
+        setIsSendingMessage(true);
         try {
-            await connectionRef.current.invoke( //
-                "SendMessage",
+            await groupChatConnectionRef.current.invoke(
+                "SendMessage", // Method for group messages
                 channelId,
                 message
             );
+             // Optimistic UI update for group chat could be added here if desired,
+            // similar to private chat, but ensure ReceiveMessage listener handles it.
         } catch (err) {
-            console.error("Erro ao enviar mensagem via SignalR: ", err); //
-            toast.error("Erro ao enviar mensagem."); //
+            console.error("Erro ao enviar mensagem de GRUPO via SignalR: ", err);
+            toast.error("Erro ao enviar mensagem para o grupo.");
         } finally {
-            setIsSendingMessage(false); //
+            setIsSendingMessage(false);
         }
     };
 
-    const selectedCommunityData = groups.find( //
-        (g) => g.id === selectedCommunity //
+    const selectedCommunityData = groups.find(
+        (g) => g.id === selectedCommunity
     );
 
     return (
-        <div className="p-8 h-[calc(100vh-var(--header-height,80px))]"> {/* Ajustado para ocupar mais altura de tela */}
-            <Tabs defaultValue="comunidades" className="w-full h-full flex flex-col"> {/* Adicionado h-full e flex flex-col */}
-                <TabsList className="grid w-full grid-cols-2 mb-6"> {/* */}
+        <div className="p-8 h-[calc(100vh-var(--header-height,80px))]">
+            <Tabs defaultValue="comunidades" className="w-full h-full flex flex-col">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
                     <TabsTrigger
                         value="comunidades"
                         className="flex items-center gap-2 text-lg font-semibold"
                     >
-                        <Users /> Comunidades {/* Adicionado Icon */}
+                        <Users /> Comunidades
                     </TabsTrigger>
                     <TabsTrigger
                         value="bate-papo"
                         className="flex items-center gap-2 text-lg font-semibold"
                     >
-                       <MessageCircle />  Bate Papo {/* Adicionado Icon */}
+                       <MessageCircle />  Bate Papo Pessoal
                     </TabsTrigger>
                 </TabsList>
-                <TabsContent value="comunidades" className="space-y-4 flex-1 overflow-y-auto"> {/* Adicionado flex-1 e overflow-y-auto */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full"> {/* Adicionado h-full */}
-
-                        <div className="lg:col-span-1 flex flex-col h-full"> {/* Adicionado h-full */}
-                            <Card className="h-full flex flex-col rounded-[20px] md:rounded-[40px]"> {/* Estilo de borda ajustado e h-full */}
+                <TabsContent value="comunidades" className="space-y-4 flex-1 overflow-y-auto">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                        <div className="lg:col-span-1 flex flex-col h-full">
+                            <Card className="h-full flex flex-col rounded-[20px] md:rounded-[40px]">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         Comunidades que você participa
                                     </CardTitle>
                                 </CardHeader>
-                                <div className="px-6 pb-4"> {/* Div para o input */}
+                                <div className="px-6 pb-4">
                                     <Input
                                         placeholder="Pesquisar comunidade"
-                                        className="w-full" // Input ocupa toda a largura
+                                        className="w-full" 
                                         value={searchQuery}
                                         onChange={(e) =>
                                             setSearchQuery(e.target.value)
                                         }
                                     />
                                  </div>
-                                <CardContent className="flex-1 p-0 flex flex-col overflow-hidden"> {/* Adicionado overflow-hidden */}
+                                <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
                                     <CommunityCard
-                                        groups={groups.filter( //
+                                        groups={groups.filter(
                                             (group) =>
-                                                group.name //
+                                                group.name
                                                     .toLowerCase()
                                                     .includes(
                                                         searchQuery.toLowerCase()
                                                     ) ||
-                                                group.description //
+                                                (group.description || "")
                                                     .toLowerCase()
                                                     .includes(
                                                         searchQuery.toLowerCase()
                                                     )
                                         )}
-                                        selectedCommunity={selectedCommunity} //
-                                        setSelectedCommunity={handleOpenChat} //
+                                        selectedCommunity={selectedCommunity}
+                                        setSelectedCommunity={handleOpenChat} // This now correctly handles group chat joining
                                     />
                                 </CardContent>
                             </Card>
                         </div>
-                        {/* Área de Chat */}
-                        <div className="lg:col-span-2 flex flex-col h-full"> {/* Adicionado h-full */}
-                            {selectedCommunity && selectedCommunityData ? ( //
-                                <ChatWindow
-                                    currentGroup={selectedCommunityData} //
-                                    currentChannelId={selectedCommunityData.id} //
-                                    messages={chatMessages} //
-                                    onSendMessage={handleSendChatMessage} //
-                                    isSendingMessage={isSendingMessage} //
-                                    onClose={() => setSelectedCommunity(null)} //
-                                    currentUserId={session?.user.id || ""} //
+                        {/* Área de Chat de Grupo */}
+                        <div className="lg:col-span-2 flex flex-col h-full">
+                            {selectedCommunity && selectedCommunityData && currentChannelId === selectedCommunityData.id ? (
+                                <ChatWindow // This is for GROUP chats
+                                    currentGroup={selectedCommunityData}
+                                    currentChannelId={selectedCommunityData.id}
+                                    messages={chatMessages} // Messages for the selected group
+                                    onSendMessage={handleSendChatMessage}
+                                    isSendingMessage={isSendingMessage}
+                                    onClose={() => {
+                                        if (groupChatConnectionRef.current && currentChannelId && groupChatConnectionRef.current.state === signalR.HubConnectionState.Connected) {
+                                            groupChatConnectionRef.current.invoke("LeaveChannel", currentChannelId)
+                                                .then(() => console.log(`Left group channel ${currentChannelId} on close.`))
+                                                .catch(err => console.error(`Error leaving group channel ${currentChannelId} on close:`,err));
+                                        }
+                                        setSelectedCommunity(null);
+                                        setCurrentChannelId(null);
+                                        setChatMessages([]);
+                                    }}
+                                    currentUserId={session?.user.id || ""}
                                 />
                             ) : (
-                                <EmptyWindow message="Selecione uma comunidade para ver o chat." icon={<Users className="h-16 w-16 text-gray-400"/>} /> // Mensagem e ícone personalizados
+                                <EmptyWindow message="Selecione uma comunidade para ver o chat." icon={<Users className="h-16 w-16 text-gray-400"/>} />
                             )}
                         </div>
                     </div>
                 </TabsContent>
-                <TabsContent value="bate-papo" className="space-y-4 flex-1 overflow-y-auto"> {/* Adicionado flex-1 e overflow-y-auto */}
-                    <PrivateUserChat /> {/* Componente de chat privado renderizado aqui */}
+                <TabsContent value="bate-papo" className="space-y-4 flex-1 overflow-y-auto">
+                    {/* O componente PrivateUserChat gerencia sua própria conexão SignalR */}
+                    <PrivateUserChat /> 
                 </TabsContent>
             </Tabs>
         </div>
