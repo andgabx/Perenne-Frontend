@@ -476,7 +476,7 @@ const PrivateUserChat = () => {
     }, [privateChatMessages, currentPrivateChatChannel]);
 
     const filteredUsers = users.filter((user) =>
-        user.name.toLowerCase().includes(userSearchQuery.toLowerCase())
+        (user.name || "").toLowerCase().includes(userSearchQuery.toLowerCase())
     );
 
     const currentMessagesForChannel = currentPrivateChatChannel?.id
