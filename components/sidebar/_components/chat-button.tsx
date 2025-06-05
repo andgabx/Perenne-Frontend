@@ -8,7 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChartAreaIcon } from "lucide-react";
-
+import { useSession } from "next-auth/react";
 const ChatSection = () => {
     const pathname = usePathname();
     const isActive = pathname === "/chat";
@@ -25,7 +25,7 @@ const ChatSection = () => {
                     <div className={`flex items-center gap-2 ${isActive ? "text-white" : "text-primary"}`}>
                         <ChartAreaIcon className="size-8" />
                         <span className="font-bold text-lg">
-                            CHAT
+                            MENSAGENS
                         </span>
                     </div>
                 </SidebarMenuButton>

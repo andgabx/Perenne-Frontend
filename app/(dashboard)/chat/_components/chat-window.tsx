@@ -62,7 +62,7 @@ const ChatWindow = ({
                     Chat: {currentGroup?.name || "Comunidade"}
                 </h1>
                 {onClose && (
-                     <Button
+                    <Button
                         variant="ghost"
                         size="icon"
                         onClick={onClose}
@@ -72,72 +72,88 @@ const ChatWindow = ({
                     </Button>
                 )}
             </div>
-            
-            {/* Mensagens */}
-            <ScrollArea className="flex-1 px-4 py-2 space-y-4">
-                {messages.length === 0 ? (
-                    <p className="text-gray-500 text-center mt-10">
-                        Nenhuma mensagem ainda. Comece a conversar!
-                    </p>
-                ) : (
-                    messages.map((msg, index) => {
-                        const isCurrentUserMessage = msg.senderUserId === currentUserId;
-                        // Fallback for user display name if not directly available
-                        const senderDisplayName = msg.user || `Usuário ${msg.senderUserId?.substring(0,6)}`;
 
-                        return (
-                            <div
-                                key={msg.createdAt ? `${msg.senderUserId}-${msg.createdAt}-${index}` : index} // More robust key
-                                className={`flex gap-3 items-end mb-2 ${
-                                    isCurrentUserMessage ? "flex-row-reverse" : "flex-row"
-                                }`}
-                            >
-                                <Avatar className="h-8 w-8 border">
-                                     {/* Assuming you might have avatar URLs later */}
-                                    {/* <AvatarImage src={msg.avatarUrl} alt={senderDisplayName} /> */}
-                                    <AvatarFallback className="text-xs">
-                                        {senderDisplayName.substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
+            {/* Mensagens */}
+            <ScrollArea className="flex-1 p-4">
+                <div className="space-y-4">
+                    {messages.length === 0 ? (
+                        <p className="text-gray-500 text-center mt-10">
+                            Nenhuma mensagem ainda. Comece a conversar!
+                        </p>
+                    ) : (
+                        messages.map((msg, index) => {
+                            const isCurrentUserMessage =
+                                msg.senderUserId === currentUserId;
+                            const senderDisplayName =
+                                msg.user ||
+                                `Usuário ${msg.senderUserId?.substring(0, 6)}`;
+
+                            return (
                                 <div
-                                    className={`max-w-[65%] flex flex-col ${
-                                        isCurrentUserMessage ? "items-end" : "items-start"
+                                    key={
+                                        msg.createdAt
+                                            ? `${msg.senderUserId}-${msg.createdAt}-${index}`
+                                            : index
+                                    }
+                                    className={`flex gap-3 items-end mb-2 ${
+                                        isCurrentUserMessage
+                                            ? "flex-row-reverse"
+                                            : "flex-row"
                                     }`}
                                 >
+                                    <Avatar className="h-8 w-8 border">
+                                        <AvatarFallback className="text-xs">
+                                            {senderDisplayName
+                                                .substring(0, 2)
+                                                .toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
                                     <div
-                                        className={`flex flex-wrap items-center gap-2 mb-0.5 ${
-                                            isCurrentUserMessage ? "justify-end" : ""
-                                        }`}
-                                    >
-                                        <Link
-                                            className="font-semibold text-sm text-gray-700 hover:underline"
-                                            href={`/perfil/${msg.senderUserId}`} // Example profile link
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {isCurrentUserMessage ? "Eu" : senderDisplayName}
-                                        </Link>
-                                        <span className="text-gray-400 text-xs">
-                                            {msg.createdAt
-                                                ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                                : ""}
-                                        </span>
-                                    </div>
-                                    <div
-                                        className={`text-sm p-3 rounded-lg shadow-sm ${
+                                        className={`max-w-[65%] flex flex-col ${
                                             isCurrentUserMessage
-                                                ? "bg-blue-500 text-white rounded-br-none"
-                                                : "bg-gray-100 text-gray-800 rounded-bl-none"
+                                                ? "items-end"
+                                                : "items-start"
                                         }`}
                                     >
-                                        {msg.message}
+                                        <div
+                                            className={`flex flex-wrap items-center gap-2 mb-0.5 ${
+                                                isCurrentUserMessage
+                                                    ? "justify-end"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <span className="font-semibold text-sm text-gray-700">
+                                                {isCurrentUserMessage
+                                                    ? "Eu"
+                                                    : senderDisplayName}
+                                            </span>
+                                            <span className="text-gray-400 text-xs">
+                                                {msg.createdAt
+                                                    ? new Date(
+                                                          msg.createdAt
+                                                      ).toLocaleTimeString([], {
+                                                          hour: "2-digit",
+                                                          minute: "2-digit",
+                                                      })
+                                                    : ""}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={`text-sm p-3 rounded-lg shadow-sm ${
+                                                isCurrentUserMessage
+                                                    ? "bg-blue-500 text-white rounded-br-none"
+                                                    : "bg-gray-100 text-gray-800 rounded-bl-none"
+                                            }`}
+                                        >
+                                            {msg.message}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })
-                )}
-                <div ref={messagesEndRef} />
+                            );
+                        })
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
             </ScrollArea>
 
             {/* Input */}

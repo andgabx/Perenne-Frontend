@@ -12,7 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import ChatSection from "./_components/chat-button";
 import HomeSection from "./_components/home-section";
 import CreateSection from "./_components/create-section";
-import ProjectsSection from "./_components/projects-section";
 import CommunitySection from "./_components/community-section";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -37,7 +36,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
                 <Separator />
 
-                <ProjectsSection />
 
                 <Separator />
             </SidebarContent>
