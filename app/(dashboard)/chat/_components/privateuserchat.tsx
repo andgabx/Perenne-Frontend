@@ -19,6 +19,8 @@ export interface UserType {
     id: string;
     name: string;
     avatarUrl?: string;
+    firstName?: string;
+    lastName?: string;
 }
 
 // Interface para o payload da mensagem privada recebida do servidor
@@ -88,7 +90,15 @@ const PrivateUserChat = () => {
             }
             const data = await response.json();
             setUsers(
-                data.filter((user: UserType) => user.id !== session?.user?.id)
+                data
+                    .filter((user: any) => user.id !== session?.user?.id)
+                    .map((user: any) => ({
+                        ...user,
+                        name: [user.firstName, user.lastName]
+                            .filter(Boolean)
+                            .join(" "),
+                        avatarUrl: user.profilePictureUrl || "",
+                    }))
             );
         } catch (error: any) {
             toast.error(error.message || "Erro ao buscar usuários.");
@@ -527,9 +537,13 @@ const PrivateUserChat = () => {
                                                 alt={user.name}
                                             />
                                             <AvatarFallback>
-                                                {(user.name || "??")
-                                                    .substring(0, 2)
-                                                    .toUpperCase()}
+                                                {(
+                                                    (user.firstName?.charAt(
+                                                        0
+                                                    ) || "") +
+                                                    (user.lastName?.charAt(0) ||
+                                                        "")
+                                                ).toUpperCase() || "U"}
                                             </AvatarFallback>
                                         </Avatar>
                                         <span className="font-medium">
@@ -559,9 +573,14 @@ const PrivateUserChat = () => {
                                         alt={selectedPrivateChatUser.name}
                                     />
                                     <AvatarFallback>
-                                        {(selectedPrivateChatUser.name || "??")
-                                            .substring(0, 2)
-                                            .toUpperCase()}
+                                        {(
+                                            (selectedPrivateChatUser.firstName?.charAt(
+                                                0
+                                            ) || "") +
+                                            (selectedPrivateChatUser.lastName?.charAt(
+                                                0
+                                            ) || "")
+                                        ).toUpperCase() || "U"}
                                     </AvatarFallback>
                                 </Avatar>
                                 <CardTitle>
