@@ -57,29 +57,23 @@ const ThemeSwitcher = () => {
                     value={theme}
                     onValueChange={(e) => setTheme(e)}
                 >
-                    <DropdownMenuRadioItem className="flex gap-2" value="light">
-                        <Sun
-                            size={ICON_SIZE}
-                            className="text-muted-foreground"
-                        />{" "}
-                        <span>Claro</span>
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem className="flex gap-2" value="dark">
-                        <Moon
-                            size={ICON_SIZE}
-                            className="text-muted-foreground"
-                        />{" "}
-                        <span>Escuro</span>
+                    <DropdownMenuRadioItem
+                        className="flex gap-2 data-[state=checked]:text-[#234B0C] data-[state=checked]:before:bg-[#234B0C]"
+                        value="light"
+                    >
+                        <span>Tema Claro</span>
                     </DropdownMenuRadioItem>
                     <DropdownMenuRadioItem
-                        className="flex gap-2"
+                        className="flex gap-2 data-[state=checked]:text-[#234B0C] data-[state=checked]:before:bg-[#234B0C]"
+                        value="dark"
+                    >
+                        <span>Tema Escuro</span>
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                        className="flex gap-2 data-[state=checked]:text-[#234B0C] data-[state=checked]:before:bg-[#234B0C]"
                         value="system"
                     >
-                        <Laptop
-                            size={ICON_SIZE}
-                            className="text-muted-foreground"
-                        />{" "}
-                        <span>Padrão</span>
+                        <span>Tema Padrão</span>
                     </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
             </DropdownMenuContent>
