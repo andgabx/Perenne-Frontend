@@ -527,7 +527,7 @@ const PrivateUserChat = () => {
                                                 alt={user.name}
                                             />
                                             <AvatarFallback>
-                                                {user.name
+                                                {(user.name || "??")
                                                     .substring(0, 2)
                                                     .toUpperCase()}
                                             </AvatarFallback>
@@ -559,7 +559,7 @@ const PrivateUserChat = () => {
                                         alt={selectedPrivateChatUser.name}
                                     />
                                     <AvatarFallback>
-                                        {selectedPrivateChatUser.name
+                                        {(selectedPrivateChatUser.name || "??")
                                             .substring(0, 2)
                                             .toUpperCase()}
                                     </AvatarFallback>
