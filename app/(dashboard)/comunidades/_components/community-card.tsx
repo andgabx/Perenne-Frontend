@@ -40,38 +40,39 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
         }
     }, [session, router]);
 
-    useEffect(() => {
-        const fetchAllGroups = async () => {
-            if (!session?.user?.accessToken) {
+    const fetchAllGroups = async () => {
+        if (!session?.user?.accessToken) {
+            setAllGroups([]);
+            return;
+        }
+        setIsLoadingAllGroups(true);
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/group/getall`,
+                {
+                    method: "GET",
+                    headers: getHeaders(session.user.accessToken),
+                }
+            );
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("API Error (getall groups):", errorText);
                 setAllGroups([]);
+                toast.error("Falha ao buscar grupos disponíveis.");
                 return;
             }
-            setIsLoadingAllGroups(true);
-            try {
-                const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/api/group/getall`,
-                    {
-                        method: "GET",
-                        headers: getHeaders(session.user.accessToken),
-                    }
-                );
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error("API Error (getall groups):", errorText);
-                    setAllGroups([]);
-                    toast.error("Falha ao buscar grupos disponíveis.");
-                    return;
-                }
-                const data = await response.json();
-                setAllGroups(Array.isArray(data) ? data : []);
-            } catch (error) {
-                console.error("Erro ao buscar todos os grupos:", error);
-                toast.error("Erro ao buscar grupos disponíveis.");
-                setAllGroups([]);
-            } finally {
-                setIsLoadingAllGroups(false);
-            }
-        };
+            const data = await response.json();
+            setAllGroups(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Erro ao buscar todos os grupos:", error);
+            toast.error("Erro ao buscar grupos disponíveis.");
+            setAllGroups([]);
+        } finally {
+            setIsLoadingAllGroups(false);
+        }
+    };
+
+    useEffect(() => {
         const fetchMyGroups = async () => {
             if (!session?.user?.accessToken) {
                 setMyGroups([]);
@@ -138,6 +139,11 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
         } catch (error) {
             toast.error("Erro ao entrar no grupo.");
         }
+    };
+
+    const handleGroupCreated = async () => {
+        await fetchAllGroups();
+        setIsCreateDialogOpen(false);
     };
 
     return (

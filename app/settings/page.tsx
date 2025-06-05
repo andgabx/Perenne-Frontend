@@ -9,6 +9,7 @@ import UserMain from "./_components/user-main";
 import Link from "next/link";
 import DeactivateButton from "./_components/deactivate-button";
 import LogoutUserButton from "./_components/logout-user-button";
+import { Card } from "@/components/ui/card";
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -46,10 +47,13 @@ export default function SettingsPage() {
                     </Link>
                 </div>
                 {/* <UserSettingsButton /> */}
-                <div className="py-48">
+                <Card className="py-10">
+                    <h1 className="text-sm xs:text-md sm:text-xl md:text-2xl break-words text-center font-black text-[#3C6C0C] pb-4">
+                        SOBRE A CONTA
+                    </h1>
                     <LogoutUserButton />
                     <DeactivateButton />
-                </div>
+                </Card>
             </div>
         </div>
     );
