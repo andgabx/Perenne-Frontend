@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import * as signalR from "@microsoft/signalr";
 import toast from "react-hot-toast";
-import { GroupType } from "./_components/group-list-item";
+import { GroupType } from "../../comunidades/_components/group-list-item";
 
 // Import new components (adjust paths as needed)
 
 import ChatWindow from "../../chat/_components/chat-window";
 import type { ChatMessageType } from "../../chat/_components/chat-window";
-import CreateGroupForm from "./_components/create-group-form";
-import GroupList from "./_components/group-list";
+import CreateGroupForm from "../../comunidades/_components/create-group-form";
+import GroupList from "../../comunidades/_components/group-list";
 import { getHeaders } from "@/pages/api/headers";
 
 const GroupPage = () => {
@@ -22,7 +22,9 @@ const GroupPage = () => {
     const [allGroups, setAllGroups] = useState<GroupType[]>([]);
     const [myGroups, setMyGroups] = useState<GroupType[]>([]);
     const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
-    const [currentChannelId, setCurrentChannelId] = useState<string | null>(null);
+    const [currentChannelId, setCurrentChannelId] = useState<string | null>(
+        null
+    );
     const connectionRef = useRef<signalR.HubConnection | null>(null);
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);
     const [isLoadingAllGroups, setIsLoadingAllGroups] = useState(false);

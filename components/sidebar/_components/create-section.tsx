@@ -18,6 +18,7 @@ import CreateGroupForm from "@/app/(dashboard)/descoberta/grupo/_components/crea
 const CreateSection = () => {
     const { data: session } = useSession();
     const [canCreate, setCanCreate] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
         const checkUserRole = async () => {
@@ -43,7 +44,7 @@ const CreateSection = () => {
     return (
         <SidebarMenuItem>
             {canCreate ? (
-                <Dialog>
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
                     <DialogTrigger asChild>
                         <div className="w-full h-[8vh] min-h-[60px] px-[3vw] hover:bg-[#E7EFE854] flex items-center cursor-pointer">
                             <SidebarMenuButton asChild>
@@ -63,6 +64,7 @@ const CreateSection = () => {
                         <CreateGroupForm
                             token={session?.user?.accessToken || ""}
                             isLoading={false}
+                            onSuccess={() => setIsOpen(false)}
                         />
                     </DialogContent>
                 </Dialog>

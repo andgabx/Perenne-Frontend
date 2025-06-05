@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { createGroup } from "../../../../../pages/api/group/create-group";
+import { createGroup } from "../../../../pages/api/group/create-group";
 import { toast } from "react-hot-toast";
 
 interface CreateGroupFormProps {
