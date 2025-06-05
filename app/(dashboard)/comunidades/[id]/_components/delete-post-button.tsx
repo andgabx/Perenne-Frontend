@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import { deletePost } from "@/pages/api/post/delete";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 const DeletePostButton = ({
     postId,
@@ -44,10 +45,10 @@ const DeletePostButton = ({
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button>
+                <DropdownMenuItem className="text-center text-[#234B0C] font-bold">
                     <Trash2 className="w-4 h-4" />
                     Deletar
-                </Button>
+                </DropdownMenuItem>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

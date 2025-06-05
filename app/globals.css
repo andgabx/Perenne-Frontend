@@ -3,7 +3,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap");
 @font-face {
     font-family: "BN Bobbie Sans";
-    src: url("/fonts/BNBobbieSans.otf") format("opentype");
+    src: url("/font/BNBobbieSans.otf") format("opentype");
     font-weight: 400 900; /* ajuste conforme os pesos disponíveis */
     font-display: swap;
 }

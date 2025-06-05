@@ -46,7 +46,7 @@ function PostForm({ groupId }: { groupId: string }) {
             setSuccess(true);
             reset();
             toast.success("Postagem criada com sucesso!");
-            router.push(`/descoberta/grupo/${groupId}`);
+            router.push(`/comunidades/${groupId}`);
         } catch (error) {
             console.error("Erro ao criar postagem:", error);
             toast.error("Erro ao criar postagem");

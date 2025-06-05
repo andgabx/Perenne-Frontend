@@ -13,10 +13,11 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import CreateGroupForm from "@/app/(dashboard)/descoberta/grupo/_components/create-group-form";
+import CreateGroupForm from "@/app/(dashboard)/comunidades/_components/create-group-form";
 import GroupList from "./group-list";
 import { getHeaders } from "@/pages/api/headers";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 interface StyledCommunityGridProps {
     selectedCommunity: string | null;
@@ -156,13 +157,14 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
                 MINHAS COMUNIDADES
             </h3>
             {allGroups.length === 0 && (
-                <p className="text-center text-gray-500 text-[1.2vw] md:text-[1vw]">
-                    Você ainda não participa de nenhuma comunidade.
+                <p className="text-center text-gray-500 text-md py-8">
+                    Você ainda não participa de nenhuma comunidade!
                 </p>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-4 gap-4">
                 {/* Espaçamento da grade */}
                 {myGroups.map((community) => (
+                    <Link href={`/comunidades/${community.id}`} key={community.id}>
                     <div
                         key={community.id}
                         className="relative cursor-pointer group transform hover:scale-105 transition-transform duration-200"
@@ -188,16 +190,14 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
                                 {/* Padding vertical em vh, horizontal em vw */}
                                 <h4
                                     className="text-[#24BD0A] break-words uppercase font-['BN_Bobbie_Sans'] text-[1.8vw] md:text-[1.5vw] lg:text-[1.2vw] font-normal"
-                                    style={{
-                                        fontFamily:
-                                            '"BN Bobbie Sans", sans-serif',
-                                    }}
+                                    
                                 >
                                     {community.name}
                                 </h4>
                             </div>
                         </div>
                     </div>
+                    </Link>
                 ))}
                 {/* Card de criar comunidade */}
                 <div

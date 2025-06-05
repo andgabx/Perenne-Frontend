@@ -16,7 +16,7 @@ export const getLastPosts = async (
     token: string
 ): Promise<Post[]> => {
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/feed/${groupId}/getposts/10`, // mudar esse numero pra manipular os ultimos posts que forem aparecer
+        `${process.env.NEXT_PUBLIC_API_URL}/api/feed/${groupId}/getallposts`, // mudar esse numero pra manipular os ultimos posts que forem aparecer
         {
             headers: getHeaders(token),
         }

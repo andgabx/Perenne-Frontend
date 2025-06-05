@@ -13,7 +13,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import CreateGroupForm from "@/app/(dashboard)/descoberta/grupo/_components/create-group-form";
+import CreateGroupForm from "@/app/(dashboard)/comunidades/_components/create-group-form";
 
 const CreateSection = () => {
     const { data: session } = useSession();

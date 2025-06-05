@@ -42,15 +42,15 @@ export function UserSection() {
     return (
         
                 <SidebarMenuButton
-                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground w-full h-[8vh] min-h-[60px] px-[3vw] hover:bg-[#E7EFE854] flex items-center"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground w-full h-[8vh] text-lg min-h-[60px] px-[3vw] hover:bg-[#E7EFE854] flex items-center"
                 >
                     <Avatar className="h-8 w-8 rounded-lg">
                         <AvatarFallback className="rounded-lg">
                             {session?.user?.name?.charAt(0)}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate text-primary font-medium">
+                    <div className="grid flex-1 text-left ">
+                        <span className="truncate text-primary text-md font-medium">
                             {session?.user.name}
                         </span>
                     </div>
