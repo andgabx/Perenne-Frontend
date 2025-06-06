@@ -1,6 +1,12 @@
-# Projeto Perenne - Frontend (EM DESENVOLVIMENTO)
+# Projeto Perenne - Frontend
 
 ## Ver também: [Perenne-Backend](https://github.com/filipe-ms/Perenne-Backend)
+
+Contas para testes:
+
+Admin: E-mail: admin@projetos3.com senha: testeplataforma@
+
+Usuário: E-mail: usuario@projetos3.com senha: testeplataforma@
 
 ## Sobre o Projeto
 
