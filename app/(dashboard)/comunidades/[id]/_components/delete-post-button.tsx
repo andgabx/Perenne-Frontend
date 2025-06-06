@@ -18,9 +18,13 @@ import { toast } from "react-hot-toast";
 const DeletePostButton = ({
     postId,
     groupId,
+    onSuccess,
+    onClose,
 }: {
     postId: string;
     groupId: string;
+    onSuccess?: () => void;
+    onClose?: () => void;
 }) => {
     const session = useSession();
     const router = useRouter();
@@ -36,6 +40,8 @@ const DeletePostButton = ({
             await deletePost(postId, groupId, session.data.user.accessToken);
             toast.success("Postagem deletada com sucesso!");
             router.refresh(); // Refresh the page to update the posts list
+            if (onSuccess) onSuccess();
+            if (onClose) onClose();
         } catch (error) {
             console.error("Erro ao deletar post:", error);
         }

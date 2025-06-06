@@ -642,7 +642,7 @@ const PrivateUserChat = () => {
                             <div ref={messagesEndRef} />
                         </ScrollArea>
                         <CardContent className="p-4 border-t">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center max-w-[50vw] gap-2">
                                 <Input
                                     placeholder="Digite sua mensagem..."
                                     value={privateMessageInput}
@@ -654,7 +654,7 @@ const PrivateUserChat = () => {
                                         !isSendingPrivateMessage &&
                                         handleSendPrivateMessage()
                                     }
-                                    className="flex-1"
+                                    className="flex-1 bg-[#3C6C0C] text-white placeholder:text-white"
                                     disabled={
                                         isSendingPrivateMessage ||
                                         !currentPrivateChatChannel
@@ -667,9 +667,12 @@ const PrivateUserChat = () => {
                                         !privateMessageInput.trim() ||
                                         !currentPrivateChatChannel
                                     }
+                                    className="w-[5vw] bg-[#3C6C0C] text-white rounded-lg"
                                 >
                                     <Send className="h-5 w-5" />
-                                    <span className="ml-2 sr-only">Enviar</span>
+                                    <span className=" sr-only">
+                                        Enviar
+                                    </span>
                                 </Button>
                             </div>
                         </CardContent>

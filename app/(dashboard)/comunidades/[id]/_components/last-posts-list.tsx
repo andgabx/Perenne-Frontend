@@ -83,6 +83,7 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
         postId: string;
         groupId: string;
     }>(null);
+    const [refreshPosts, setRefreshPosts] = useState(0);
 
     useEffect(() => {
         if (!feedId) return;
@@ -108,7 +109,7 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
         if (session.status === "authenticated") {
             fetchPosts();
         }
-    }, [feedId, session.status, session.data, refreshTrigger]);
+    }, [feedId, session.status, session.data, refreshTrigger, refreshPosts]);
 
     return (
         <div className="bg-[#E3F2E6] min-h-[200px] rounded-[32px] p-6 flex flex-col gap-6">
@@ -196,6 +197,32 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
                                                     >
                                                         <Trash2 size={18} />
                                                         Deletar
+                                                        {deletePost &&
+                                                            deletePost.postId ===
+                                                                post.id && (
+                                                                <DeletePostButton
+                                                                    postId={
+                                                                        post.id
+                                                                    }
+                                                                    groupId={
+                                                                        feedId
+                                                                    }
+                                                                    onSuccess={() =>
+                                                                        setRefreshPosts(
+                                                                            (
+                                                                                v
+                                                                            ) =>
+                                                                                v +
+                                                                                1
+                                                                        )
+                                                                    }
+                                                                    onClose={() =>
+                                                                        setDeletePost(
+                                                                            null
+                                                                        )
+                                                                    }
+                                                                />
+                                                            )}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -250,7 +277,10 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
                             postIdString={editPost.postIdString}
                             initialTitle={editPost.initialTitle}
                             initialContent={editPost.initialContent}
-                            onSuccess={() => setEditPost(null)}
+                            onSuccess={() => {
+                                setEditPost(null);
+                                setRefreshPosts((v) => v + 1);
+                            }}
                         />
                     )}
                 </DialogContent>
@@ -273,6 +303,8 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
                         <DeletePostButton
                             postId={deletePost.postId}
                             groupId={deletePost.groupId}
+                            onSuccess={() => setRefreshPosts((v) => v + 1)}
+                            onClose={() => setDeletePost(null)}
                         />
                     )}
                     <DialogClose asChild>
