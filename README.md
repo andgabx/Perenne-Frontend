@@ -60,6 +60,7 @@ yarn install
 
 ## 👥 Equipe Perenne
 
+-   [Filipe](https://github.com/filipe-ms)
 -   [Débora](https://github.com/DeboraCASouza/)
 -   [Yuri](https://github.com/yuricavalcanti06/)
 -   [Gabriel](https://github.com/andgabx/)
