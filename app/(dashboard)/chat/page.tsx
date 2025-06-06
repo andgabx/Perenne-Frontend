@@ -10,14 +10,13 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import CommunityCard from "./_components/community-cards";
 import { getGroups } from "@/pages/api/group/get-group-by-user";
-import ChatWindow from "./_components/chat-window";
+import ChatWindow, { type ChatMessageType } from "./_components/chat-window";
 import * as signalR from "@microsoft/signalr";
-import type { ChatMessageType } from "./_components/chat-window";
 import EmptyWindow from "./_components/empty-window";
 import PrivateUserChat from "./_components/privateuserchat";
 import { GroupType } from "../comunidades/_components/group-list-item";
 
-export default function ChatInterface() {
+export default function ChatPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [groups, setGroups] = useState<GroupType[]>([]);
@@ -28,45 +27,37 @@ export default function ChatInterface() {
     const [searchQuery, setSearchQuery] = useState("");
 
     const groupChatConnectionRef = useRef<signalR.HubConnection | null>(null);
-    // Use a ref to hold the current channel ID to avoid stale closures in SignalR handlers
     const currentChannelIdRef = useRef<string | null>(null);
 
-    // Keep the ref in sync with the state
+    // Manter a ref sincronizada com o estado para evitar closures obsoletas
     useEffect(() => {
         currentChannelIdRef.current = currentChannelId;
     }, [currentChannelId]);
 
-    // Effect for fetching user's groups
+    // Efeito para buscar os grupos do usuário
     useEffect(() => {
         if (status === "authenticated" && session?.user?.accessToken) {
             getGroups(session.user.accessToken).then((data) => {
-                setGroups(
-                    data.map((g) => ({
-                        ...g,
-                        description: (g as any).description || "",
-                    }))
-                );
+                setGroups(data.map((g) => ({ ...g, description: (g as any).description || "" })));
             });
         }
     }, [status, session]);
 
-    // Effect for handling authentication status
+    // Efeito para lidar com o status de autenticação
     useEffect(() => {
         if (status === "unauthenticated") {
             router.push("/login");
         }
     }, [status, router]);
 
-    // Effect for managing the SignalR connection
+    // Efeito para gerir a conexão SignalR
     useEffect(() => {
         if (status !== "authenticated" || !session?.user.accessToken) {
-            if (groupChatConnectionRef.current?.state === signalR.HubConnectionState.Connected) {
-                groupChatConnectionRef.current.stop();
-            }
+            groupChatConnectionRef.current?.stop();
             return;
         }
 
-        if (!groupChatConnectionRef.current) {
+        if (!groupChatConnectionRef.current || groupChatConnectionRef.current.state === signalR.HubConnectionState.Disconnected) {
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/chathub`, {
                     accessTokenFactory: () => session.user.accessToken!,
@@ -76,87 +67,70 @@ export default function ChatInterface() {
 
             groupChatConnectionRef.current = connection;
 
-            // Define event handlers only once
-            connection.onclose((error) => console.log("SignalR (Group) Connection closed.", error));
+            connection.onclose((error) => console.log("Conexão SignalR (Grupo) fechada.", error));
 
-            // MODIFIED: Correctly handle incoming messages
-            connection.on(
-                "ReceiveMessage",
-                (channelId: string, user: string, message: string, createdAt: string, senderUserId: string) => {
-                    // Use the ref to check against the current channel ID, avoiding stale state
-                    if (currentChannelIdRef.current === channelId) {
-                        setChatMessages((prevMessages) => {
-                            const messageExists = prevMessages.some(
-                                (m) => m.message === message && m.senderUserId === senderUserId && new Date(m.createdAt || "").getTime() === new Date(createdAt).getTime()
-                            );
-                            if (messageExists) {
-                                return prevMessages; // Avoid duplicates from optimistic updates
-                            }
-                            const newMessage: ChatMessageType = {
-                                userId: senderUserId,
-                                user,
-                                message,
-                                createdAt,
-                                senderUserId,
-                            };
-                            return [...prevMessages, newMessage];
-                        });
-                    } else {
-                        // Optional: Handle message for a non-active chat (e.g., show notification)
-                        console.log(`Received message for channel ${channelId}, but currently in ${currentChannelIdRef.current}`);
-                    }
+            // CORRIGIDO: O handler de mensagens agora usa a estrutura correta de ChatMessageType
+            connection.on("ReceiveMessage", (channelId: string, user: string, message: string, createdAt: string, senderUserId: string) => {
+                if (currentChannelIdRef.current === channelId) {
+                    setChatMessages((prevMessages) => {
+                        // Verificação de duplicados para evitar problemas com a atualização otimista
+                        const messageExists = prevMessages.some(
+                            (m) => m.message === message && m.userId === senderUserId && new Date(m.createdAt || "").getTime() === new Date(createdAt).getTime()
+                        );
+                        if (messageExists) {
+                            return prevMessages;
+                        }
+                        const newMessage: ChatMessageType = {
+                            userId: senderUserId, // Mapeado corretamente
+                            user,
+                            message,
+                            createdAt,
+                        };
+                        return [...prevMessages, newMessage];
+                    });
                 }
-            );
+            });
 
             connection
                 .start()
-                .then(() => console.log("SignalR (Group) Connected."))
-                .catch((err) => console.error("SignalR (Group) Connection Error: ", err));
+                .then(() => console.log("SignalR (Grupo) Conectado."))
+                .catch((err) => console.error("Erro na conexão SignalR (Grupo): ", err));
         }
         
-        // Cleanup on component unmount
         return () => {
             groupChatConnectionRef.current?.stop();
         };
     }, [status, session]);
 
-    // ADDED: Function to fetch message history for a group
+    // Função para buscar o histórico de mensagens de um grupo
     const fetchGroupChatHistory = async (groupId: string, token: string): Promise<ChatMessageType[]> => {
         try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/Chat/${groupId}/getcachedmessages`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-            if (!response.ok) {
-                throw new Error(`Failed to fetch chat history. Status: ${response.status}`);
-            }
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Chat/${groupId}/getcachedmessages`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!response.ok) throw new Error("Falha ao buscar histórico de chat.");
+
             const history = await response.json();
-            // Map backend FTO to frontend ChatMessageType
-            const mappedMessages: ChatMessageType[] = history.map((msg: any) => ({
+            return history.map((msg: any) => ({
                 userId: msg.createdById,
                 user: `${msg.firstName} ${msg.lastName}`.trim(),
                 message: msg.message,
                 createdAt: msg.createdAt,
-                senderUserId: msg.createdById,
             }));
-            return mappedMessages;
         } catch (error) {
-            console.error("Error fetching group chat history:", error);
+            console.error("Erro ao buscar histórico do chat de grupo:", error);
             toast.error("Erro ao carregar o histórico do chat.");
             return [];
         }
     };
     
-    // MODIFIED: Complete overhaul of chat opening logic
+    // Lógica para abrir um chat
     const handleOpenChat = async (groupId: string) => {
         if (status !== "authenticated" || !session?.user?.accessToken) {
-            toast.error("Você precisa estar logado para entrar no chat");
+            toast.error("Você precisa estar logado para entrar no chat.");
             return;
         }
-
-        if (currentChannelId === groupId) return; // Already in this chat
+        if (currentChannelId === groupId) return;
 
         const connection = groupChatConnectionRef.current;
         if (connection?.state !== signalR.HubConnectionState.Connected) {
@@ -164,37 +138,27 @@ export default function ChatInterface() {
             return;
         }
         
-        // Leave the previous SignalR group channel
         if (currentChannelId) {
-            try {
-                await connection.invoke("LeaveChannel", currentChannelId);
-                console.log(`Left previous group channel: ${currentChannelId}`);
-            } catch (err) {
-                console.error(`Error leaving group channel ${currentChannelId}:`, err);
-            }
+            await connection.invoke("LeaveChannel", currentChannelId).catch(err => console.error("Erro ao sair do canal anterior:", err));
         }
         
-        // Set new state and fetch history
         setSelectedCommunity(groupId);
         setCurrentChannelId(groupId);
-        setChatMessages([]); // Clear old messages immediately
+        setChatMessages([]);
 
         try {
-            // Join the new SignalR group channel
             await connection.invoke("JoinChannel", groupId);
-            console.log(`Successfully joined group channel: ${groupId}`);
-            
-            // Fetch history for the new channel
             const historyMessages = await fetchGroupChatHistory(groupId, session.user.accessToken);
             setChatMessages(historyMessages);
         } catch (err) {
-            console.error(`Error joining group channel ${groupId} or fetching history:`, err);
+            console.error(`Erro ao entrar no canal ${groupId} ou buscar histórico:`, err);
             toast.error("Não foi possível entrar no chat do grupo.");
             setSelectedCommunity(null);
             setCurrentChannelId(null);
         }
     };
     
+    // Lógica para enviar mensagem
     const handleSendChatMessage = async (message: string, channelId: string) => {
         const connection = groupChatConnectionRef.current;
         if (!message.trim() || !channelId || connection?.state !== signalR.HubConnectionState.Connected) {
@@ -204,13 +168,12 @@ export default function ChatInterface() {
 
         setIsSendingMessage(true);
         try {
-            // Optimistic update: show the message immediately on the sender's screen
+            // CORRIGIDO: Atualização otimista com a estrutura de dados correta
             const optimisticMessage: ChatMessageType = {
                 userId: session?.user.id || "",
                 user: session?.user.name || "Eu",
                 message: message,
                 createdAt: new Date().toISOString(),
-                senderUserId: session?.user.id || "",
             };
             setChatMessages((prev) => [...prev, optimisticMessage]);
 
@@ -218,8 +181,7 @@ export default function ChatInterface() {
         } catch (err) {
             console.error("Erro ao enviar mensagem de GRUPO via SignalR: ", err);
             toast.error("Erro ao enviar mensagem.");
-            // Revert optimistic update on failure
-            setChatMessages((prev) => prev.filter((m) => m.message !== message));
+            setChatMessages((prev) => prev.filter((m) => m.message !== message && m.user === (session?.user.name || "Eu")));
         } finally {
             setIsSendingMessage(false);
         }
@@ -229,11 +191,8 @@ export default function ChatInterface() {
 
     const handleCloseChat = () => {
         const connection = groupChatConnectionRef.current;
-        if (connection && currentChannelId && connection.state === signalR.HubConnectionState.Connected) {
-            connection
-                .invoke("LeaveChannel", currentChannelId)
-                .then(() => console.log(`Left group channel ${currentChannelId} on close.`))
-                .catch((err) => console.error(`Error leaving group channel ${currentChannelId} on close:`, err));
+        if (connection && currentChannelId) {
+            connection.invoke("LeaveChannel", currentChannelId).catch(err => console.error("Erro ao sair do canal ao fechar:", err));
         }
         setSelectedCommunity(null);
         setCurrentChannelId(null);
@@ -280,7 +239,7 @@ export default function ChatInterface() {
                             </Card>
                         </div>
                         <div className="lg:col-span-2 flex flex-col h-full">
-                            {selectedCommunity && selectedCommunityData && currentChannelId === selectedCommunityData.id ? (
+                            {selectedCommunityData && currentChannelId === selectedCommunityData.id ? (
                                 <ChatWindow
                                     currentGroup={selectedCommunityData}
                                     currentChannelId={selectedCommunityData.id}

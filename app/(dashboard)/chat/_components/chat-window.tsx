@@ -73,7 +73,7 @@ const ChatWindow = ({
             </div>
 
             {/* Mensagens */}
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 p-4 max-h-[60vh]">
                 <div className="space-y-4">
                     {messages.length === 0 ? (
                         <p className="text-gray-500 text-center mt-10">
