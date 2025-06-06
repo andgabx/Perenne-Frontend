@@ -16,9 +16,21 @@ import EmptyWindow from "./_components/empty-window";
 import PrivateUserChat from "./_components/privateuserchat";
 import { GroupType } from "../comunidades/_components/group-list-item";
 
+// Interface para o payload da mensagem privada, agora gerenciada aqui
+interface PrivateMessagePayload {
+    chatChannelId: string;
+    senderId: string;
+    senderDisplayName:string;
+    message: string;
+    createdAt: string;
+    messageId: string;
+}
+
 export default function ChatPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
+
+    // Estado do Chat de Comunidade
     const [groups, setGroups] = useState<GroupType[]>([]);
     const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
@@ -26,96 +38,116 @@ export default function ChatPage() {
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-    const groupChatConnectionRef = useRef<signalR.HubConnection | null>(null);
+    // Estado do Chat Privado (agora gerenciado no componente pai)
+    const [privateChatMessages, setPrivateChatMessages] = useState<{ [key: string]: ChatMessageType[] }>({});
+
+    // Conexão SignalR ÚNICA e Centralizada
+    const connectionRef = useRef<signalR.HubConnection | null>(null);
+    const [isConnectionReady, setIsConnectionReady] = useState(false);
     const currentChannelIdRef = useRef<string | null>(null);
 
-    // Manter a ref sincronizada com o estado para evitar closures obsoletas
     useEffect(() => {
         currentChannelIdRef.current = currentChannelId;
     }, [currentChannelId]);
 
-    // Efeito para buscar os grupos do usuário
-    useEffect(() => {
-        if (status === "authenticated" && session?.user?.accessToken) {
-            getGroups(session.user.accessToken).then((data) => {
-                setGroups(data.map((g) => ({ ...g, description: (g as any).description || "" })));
-            });
-        }
-    }, [status, session]);
-
-    // Efeito para lidar com o status de autenticação
     useEffect(() => {
         if (status === "unauthenticated") {
             router.push("/login");
+        } else if (status === "authenticated" && session?.user?.accessToken) {
+            getGroups(session.user.accessToken).then((data) => {
+                setGroups(data.map((g: any) => ({ ...g, description: g.description || "" })));
+            });
         }
-    }, [status, router]);
+    }, [status, session, router]);
 
-    // Efeito para gerir a conexão SignalR
+    // Efeito para gerenciar a conexão SignalR ÚNICA
     useEffect(() => {
         if (status !== "authenticated" || !session?.user.accessToken) {
-            groupChatConnectionRef.current?.stop();
+            if (connectionRef.current?.state === signalR.HubConnectionState.Connected) {
+                connectionRef.current.stop();
+            }
+            setIsConnectionReady(false);
             return;
         }
 
-        if (!groupChatConnectionRef.current || groupChatConnectionRef.current.state === signalR.HubConnectionState.Disconnected) {
+        if (!connectionRef.current || connectionRef.current.state === signalR.HubConnectionState.Disconnected) {
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/chathub`, {
                     accessTokenFactory: () => session.user.accessToken!,
                 })
                 .withAutomaticReconnect()
                 .build();
+            
+            connectionRef.current = connection;
 
-            groupChatConnectionRef.current = connection;
-
-            connection.onclose((error) => console.log("Conexão SignalR (Grupo) fechada.", error));
-
-            // CORRIGIDO: O handler de mensagens agora usa a estrutura correta de ChatMessageType
+            // Handler para mensagens de GRUPO
             connection.on("ReceiveMessage", (channelId: string, user: string, message: string, createdAt: string, senderUserId: string) => {
                 if (currentChannelIdRef.current === channelId) {
                     setChatMessages((prevMessages) => {
-                        // Verificação de duplicados para evitar problemas com a atualização otimista
-                        const messageExists = prevMessages.some(
-                            (m) => m.message === message && m.userId === senderUserId && new Date(m.createdAt || "").getTime() === new Date(createdAt).getTime()
-                        );
-                        if (messageExists) {
-                            return prevMessages;
-                        }
-                        const newMessage: ChatMessageType = {
-                            userId: senderUserId, // Mapeado corretamente
-                            user,
-                            message,
-                            createdAt,
-                        };
+                        const messageExists = prevMessages.some(m => m.message === message && m.senderUserId === senderUserId && m.createdAt === createdAt);
+                        if (messageExists) return prevMessages;
+                        
+                        const newMessage: ChatMessageType = { userId: senderUserId, user, message, createdAt, senderUserId };
                         return [...prevMessages, newMessage];
                     });
                 }
             });
 
+            // Handler para mensagens PRIVADAS
+            connection.on("ReceivePrivateMessage", (payload: PrivateMessagePayload) => {
+                const { chatChannelId, senderId, senderDisplayName, message, createdAt } = payload;
+                const newMessage: ChatMessageType = {
+                    userId: senderId,
+                    user: senderDisplayName,
+                    message,
+                    createdAt,
+                    senderUserId: senderId,
+                };
+                setPrivateChatMessages(prev => {
+                    const existing = prev[chatChannelId] || [];
+                    return {
+                        ...prev,
+                        [chatChannelId]: [...existing, newMessage].sort(
+                            (a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime()
+                        ),
+                    };
+                });
+            });
+
+            connection.onclose((error) => {
+                console.log("Conexão SignalR (Unificada) fechada.", error);
+                setIsConnectionReady(false);
+            });
+
             connection
                 .start()
-                .then(() => console.log("SignalR (Grupo) Conectado."))
-                .catch((err) => console.error("Erro na conexão SignalR (Grupo): ", err));
+                .then(() => {
+                    console.log("SignalR (Unificada) Conectado.");
+                    setIsConnectionReady(true);
+                })
+                .catch((err) => console.error("Erro na conexão SignalR (Unificada): ", err));
         }
-        
+
         return () => {
-            groupChatConnectionRef.current?.stop();
+            connectionRef.current?.stop();
+            setIsConnectionReady(false);
         };
     }, [status, session]);
 
-    // Função para buscar o histórico de mensagens de um grupo
+    // Funções do Chat de Grupo
     const fetchGroupChatHistory = async (groupId: string, token: string): Promise<ChatMessageType[]> => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Chat/${groupId}/getcachedmessages`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!response.ok) throw new Error("Falha ao buscar histórico de chat.");
-
             const history = await response.json();
             return history.map((msg: any) => ({
                 userId: msg.createdById,
                 user: `${msg.firstName} ${msg.lastName}`.trim(),
                 message: msg.message,
                 createdAt: msg.createdAt,
+                senderUserId: msg.createdById,
             }));
         } catch (error) {
             console.error("Erro ao buscar histórico do chat de grupo:", error);
@@ -123,23 +155,16 @@ export default function ChatPage() {
             return [];
         }
     };
-    
-    // Lógica para abrir um chat
+
     const handleOpenChat = async (groupId: string) => {
-        if (status !== "authenticated" || !session?.user?.accessToken) {
-            toast.error("Você precisa estar logado para entrar no chat.");
+        if (!isConnectionReady || !connectionRef.current || !session?.user?.accessToken) {
+            toast.error("Conexão com o chat não está pronta.");
             return;
         }
         if (currentChannelId === groupId) return;
-
-        const connection = groupChatConnectionRef.current;
-        if (connection?.state !== signalR.HubConnectionState.Connected) {
-            toast.error("Conexão com o chat não está ativa.");
-            return;
-        }
         
         if (currentChannelId) {
-            await connection.invoke("LeaveChannel", currentChannelId).catch(err => console.error("Erro ao sair do canal anterior:", err));
+            await connectionRef.current.invoke("LeaveChannel", currentChannelId).catch(err => console.error("Erro ao sair do canal anterior:", err));
         }
         
         setSelectedCommunity(groupId);
@@ -147,7 +172,7 @@ export default function ChatPage() {
         setChatMessages([]);
 
         try {
-            await connection.invoke("JoinChannel", groupId);
+            await connectionRef.current.invoke("JoinChannel", groupId);
             const historyMessages = await fetchGroupChatHistory(groupId, session.user.accessToken);
             setChatMessages(historyMessages);
         } catch (err) {
@@ -158,9 +183,8 @@ export default function ChatPage() {
         }
     };
     
-    // Lógica para enviar mensagem
     const handleSendChatMessage = async (message: string, channelId: string) => {
-        const connection = groupChatConnectionRef.current;
+        const connection = connectionRef.current;
         if (!message.trim() || !channelId || connection?.state !== signalR.HubConnectionState.Connected) {
             toast.error("Não é possível enviar a mensagem.");
             return;
@@ -168,12 +192,12 @@ export default function ChatPage() {
 
         setIsSendingMessage(true);
         try {
-            // CORRIGIDO: Atualização otimista com a estrutura de dados correta
             const optimisticMessage: ChatMessageType = {
-                userId: session?.user.id || "",
-                user: session?.user.name || "Eu",
+                userId: session!.user.id!,
+                user: session!.user.name || "Eu",
                 message: message,
                 createdAt: new Date().toISOString(),
+                senderUserId: session!.user.id!,
             };
             setChatMessages((prev) => [...prev, optimisticMessage]);
 
@@ -181,16 +205,14 @@ export default function ChatPage() {
         } catch (err) {
             console.error("Erro ao enviar mensagem de GRUPO via SignalR: ", err);
             toast.error("Erro ao enviar mensagem.");
-            setChatMessages((prev) => prev.filter((m) => m.message !== message && m.user === (session?.user.name || "Eu")));
+            setChatMessages((prev) => prev.slice(0, -1)); // Remove a mensagem otimista
         } finally {
             setIsSendingMessage(false);
         }
     };
 
-    const selectedCommunityData = groups.find((g) => g.id === selectedCommunity);
-
     const handleCloseChat = () => {
-        const connection = groupChatConnectionRef.current;
+        const connection = connectionRef.current;
         if (connection && currentChannelId) {
             connection.invoke("LeaveChannel", currentChannelId).catch(err => console.error("Erro ao sair do canal ao fechar:", err));
         }
@@ -198,9 +220,11 @@ export default function ChatPage() {
         setCurrentChannelId(null);
         setChatMessages([]);
     };
+    
+    const selectedCommunityData = groups.find((g) => g.id === selectedCommunity);
 
     return (
-        <div className="p-8 h-[calc(100vh-var(--header-height,80px))]">
+        <div className="p-4 sm:p-8 h-full">
             <Tabs defaultValue="comunidades" className="w-full h-full flex flex-col">
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                     <TabsTrigger value="comunidades" className="flex items-center gap-2 text-lg font-semibold">
@@ -210,7 +234,9 @@ export default function ChatPage() {
                         <MessageCircle /> Bate Papo Pessoal
                     </TabsTrigger>
                 </TabsList>
-                <TabsContent value="comunidades" className="space-y-4 flex-1 overflow-y-auto">
+
+                {/* Aba de Comunidades */}
+                <TabsContent value="comunidades" className="flex-1 overflow-y-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
                         <div className="lg:col-span-1 flex flex-col h-full">
                             <Card className="h-full flex flex-col rounded-[20px] md:rounded-[40px]">
@@ -219,7 +245,7 @@ export default function ChatPage() {
                                 </CardHeader>
                                 <div className="px-6 pb-4">
                                     <Input
-                                        placeholder="Pesquisar comunidade"
+                                        placeholder="Pesquisar comunidade..."
                                         className="w-full"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -227,11 +253,7 @@ export default function ChatPage() {
                                 </div>
                                 <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
                                     <CommunityCard
-                                        groups={groups.filter(
-                                            (group) =>
-                                                group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                                (group.description || "").toLowerCase().includes(searchQuery.toLowerCase())
-                                        )}
+                                        groups={groups.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase()))}
                                         selectedCommunity={selectedCommunity}
                                         setSelectedCommunity={handleOpenChat}
                                     />
@@ -239,10 +261,12 @@ export default function ChatPage() {
                             </Card>
                         </div>
                         <div className="lg:col-span-2 flex flex-col h-full">
-                            {selectedCommunityData && currentChannelId === selectedCommunityData.id ? (
+                             {!isConnectionReady ? (
+                                <EmptyWindow title="Conectando..." message="Aguarde enquanto conectamos ao serviço de chat." />
+                             ) : selectedCommunityData && currentChannelId ? (
                                 <ChatWindow
                                     currentGroup={selectedCommunityData}
-                                    currentChannelId={selectedCommunityData.id}
+                                    currentChannelId={currentChannelId}
                                     messages={chatMessages}
                                     onSendMessage={handleSendChatMessage}
                                     isSendingMessage={isSendingMessage}
@@ -251,15 +275,26 @@ export default function ChatPage() {
                                 />
                             ) : (
                                 <EmptyWindow
-                                    message="Selecione uma comunidade para ver o chat."
+                                    title="Chat de Comunidade"
+                                    message="Selecione uma comunidade da lista para começar a conversar."
                                     icon={<Users className="h-16 w-16 text-gray-400" />}
                                 />
                             )}
                         </div>
                     </div>
                 </TabsContent>
-                <TabsContent value="bate-papo" className="space-y-4 flex-1 overflow-y-auto">
-                    <PrivateUserChat />
+                
+                {/* Aba de Chat Pessoal */}
+                <TabsContent value="bate-papo" className="flex-1 overflow-y-auto">
+                    {isConnectionReady && connectionRef.current ? (
+                        <PrivateUserChat
+                            connection={connectionRef.current}
+                            privateChatMessages={privateChatMessages}
+                            setPrivateChatMessages={setPrivateChatMessages}
+                        />
+                    ) : (
+                         <EmptyWindow title="Conectando..." message="Aguarde enquanto conectamos ao serviço de chat." />
+                    )}
                 </TabsContent>
             </Tabs>
         </div>

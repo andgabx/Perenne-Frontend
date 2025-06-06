@@ -10,11 +10,11 @@ import { Send, User, X } from "lucide-react";
 import { getHeaders } from "@/pages/api/headers";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import * as signalR from "@microsoft/signalr";
-import type { ChatMessageType } from "./chat-window"; // Reutilizando ChatMessageType
+import type { HubConnection } from "@microsoft/signalr";
+import type { ChatMessageType } from "./chat-window";
 import EmptyWindow from "./empty-window";
 
+// --- Tipos e Interfaces ---
 export interface UserType {
     id: string;
     name: string;
@@ -23,231 +23,83 @@ export interface UserType {
     lastName?: string;
 }
 
-// Interface para o payload da mensagem privada recebida do servidor
-interface PrivateMessagePayload {
-    chatChannelId: string;
-    senderId: string;
-    senderDisplayName: string;
-    message: string;
-    createdAt: string;
-    messageId: string;
-}
-
-// Interface para os detalhes do chat privado obtidos da API
 interface PrivateChatChannelDetails {
     id: string; // chatChannelId
     isPrivate: boolean;
-    user1Id?: string;
-    user2Id?: string;
     otherParticipant: {
         id: string;
         displayName: string;
     };
-    messages?: ChatMessageType[]; // Para carregar histórico
+    messages?: ChatMessageType[];
 }
 
-const PrivateUserChat = () => {
-    const { data: session, status } = useSession();
-    const router = useRouter();
+interface PrivateUserChatProps {
+    connection: HubConnection;
+    privateChatMessages: { [key: string]: ChatMessageType[] };
+    setPrivateChatMessages: React.Dispatch<
+        React.SetStateAction<{ [key: string]: ChatMessageType[] }>
+    >;
+}
 
+// --- Componente ---
+const PrivateUserChat = ({
+    connection,
+    privateChatMessages,
+    setPrivateChatMessages,
+}: PrivateUserChatProps) => {
+    const { data: session } = useSession();
     const [users, setUsers] = useState<UserType[]>([]);
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
     const [userSearchQuery, setUserSearchQuery] = useState("");
-
     const [selectedPrivateChatUser, setSelectedPrivateChatUser] =
         useState<UserType | null>(null);
     const [currentPrivateChatChannel, setCurrentPrivateChatChannel] =
         useState<PrivateChatChannelDetails | null>(null);
-
-    const privateChatConnectionRef = useRef<signalR.HubConnection | null>(null);
-    const [privateChatMessages, setPrivateChatMessages] = useState<{
-        [chatChannelId: string]: ChatMessageType[];
-    }>({});
     const [isSendingPrivateMessage, setIsSendingPrivateMessage] =
         useState(false);
     const [privateMessageInput, setPrivateMessageInput] = useState("");
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+    // Busca a lista de usuários para iniciar conversa
     useEffect(() => {
-        if (status === "unauthenticated") {
-            router.push("/login");
-        }
-    }, [status, router]);
-
-    const fetchUsers = async () => {
-        if (!session?.user?.accessToken) return;
-        setIsLoadingUsers(true);
-        try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/user/getallusers`,
-                {
-                    headers: getHeaders(session.user.accessToken),
-                }
-            );
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Erro ao buscar usuários");
-            }
-            const data = await response.json();
-            setUsers(
-                data
-                    .filter((user: any) => user.id !== session?.user?.id)
-                    .map((user: any) => ({
-                        ...user,
-                        name: [user.firstName, user.lastName]
-                            .filter(Boolean)
-                            .join(" "),
-                        avatarUrl: user.profilePictureUrl || "",
-                    }))
-            );
-        } catch (error: any) {
-            toast.error(error.message || "Erro ao buscar usuários.");
-            console.error("Erro ao buscar usuários:", error);
-        } finally {
-            setIsLoadingUsers(false);
-        }
-    };
-
-    useEffect(() => {
-        if (status === "authenticated") {
-            fetchUsers();
-        }
-    }, [status, session]);
-
-    // Efeito para Conexão SignalR (Uma única conexão para chat privado)
-    useEffect(() => {
-        if (status !== "authenticated" || !session?.user?.accessToken) {
-            if (
-                privateChatConnectionRef.current &&
-                privateChatConnectionRef.current.state ===
-                    signalR.HubConnectionState.Connected
-            ) {
-                privateChatConnectionRef.current
-                    .stop()
-                    .then(() =>
-                        console.log(
-                            "SignalR (Privado) Connection stopped due to session/status change."
-                        )
-                    )
-                    .catch((err) =>
-                        console.error(
-                            "Error stopping SignalR (Privado) connection:",
-                            err
-                        )
-                    );
-            }
-            privateChatConnectionRef.current = null;
-            return;
-        }
-
-        // Só cria nova conexão se não existir ou não estiver conectada/conectando
-        if (
-            !privateChatConnectionRef.current ||
-            privateChatConnectionRef.current.state ===
-                signalR.HubConnectionState.Disconnected
-        ) {
-            const newPrivateConnection = new signalR.HubConnectionBuilder()
-                .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/chathub`, {
-                    // <-- URL CORRIGIDA
-                    accessTokenFactory: () => session.user.accessToken!,
-                })
-                .withAutomaticReconnect()
-                .build();
-
-            newPrivateConnection.onclose((error) => {
-                console.log("SignalR (Privado) Connection closed.", error);
-            });
-
-            newPrivateConnection.on(
-                "ReceivePrivateMessage",
-                (payload: PrivateMessagePayload) => {
-                    console.log("Private message received:", payload);
-                    const {
-                        chatChannelId,
-                        senderId,
-                        senderDisplayName,
-                        message,
-                        createdAt,
-                    } = payload;
-
-                    setPrivateChatMessages((prevMessages) => {
-                        const existingMessages =
-                            prevMessages[chatChannelId] || [];
-                        const newMessage: ChatMessageType = {
-                            userId: senderId, // ID do usuário que enviou
-                            user: senderDisplayName || senderId, // Nome de exibição do remetente
-                            message,
-                            createdAt,
-                            senderUserId: senderId, // ID do remetente
-                        };
-
-                        if (
-                            existingMessages.some(
-                                (m) =>
-                                    m.message === newMessage.message &&
-                                    m.createdAt === newMessage.createdAt &&
-                                    m.senderUserId === newMessage.senderUserId
-                            )
-                        ) {
-                            return prevMessages;
-                        }
-                        return {
-                            ...prevMessages,
-                            [chatChannelId]: [
-                                ...existingMessages,
-                                newMessage,
-                            ].sort(
-                                (a, b) =>
-                                    new Date(a.createdAt!).getTime() -
-                                    new Date(b.createdAt!).getTime()
-                            ),
-                        };
-                    });
-                }
-            );
-
-            newPrivateConnection
-                .start()
-                .then(() => {
-                    console.log("SignalR (Privado) Connected successfully.");
-                    privateChatConnectionRef.current = newPrivateConnection;
-                })
-                .catch((err) => {
-                    console.error("SignalR (Privado) Connection Error: ", err);
-                    toast.error("Falha ao conectar ao chat privado.");
-                });
-        }
-
-        // Cleanup function
-        return () => {
-            // Stop connection when the component unmounts or dependencies change significantly
-            // This check is important because the effect might run multiple times
-            if (
-                privateChatConnectionRef.current &&
-                (status !== "authenticated" || !session?.user?.accessToken)
-            ) {
-                // Ensure cleanup only if session/status leads to disconnection
-                privateChatConnectionRef.current
-                    .stop()
-                    .then(() =>
-                        console.log(
-                            "SignalR (Privado) Connection stopped on cleanup."
-                        )
-                    )
-                    .catch((err) =>
-                        console.error(
-                            "Error stopping SignalR (Privado) connection on cleanup:",
-                            err
-                        )
-                    );
-                privateChatConnectionRef.current = null;
+        const fetchUsers = async () => {
+            if (!session?.user?.accessToken) return;
+            setIsLoadingUsers(true);
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/user/getallusers`,
+                    {
+                        headers: getHeaders(session.user.accessToken),
+                    }
+                );
+                if (!response.ok) throw new Error("Erro ao buscar usuários");
+                const data = await response.json();
+                setUsers(
+                    data
+                        .filter((user: any) => user.id !== session?.user?.id)
+                        .map((user: any) => ({
+                            ...user,
+                            name: [user.firstName, user.lastName]
+                                .filter(Boolean)
+                                .join(" "),
+                            avatarUrl: user.profilePictureUrl || "",
+                        }))
+                );
+            } catch (error: any) {
+                toast.error(error.message || "Erro ao buscar usuários.");
+            } finally {
+                setIsLoadingUsers(false);
             }
         };
-    }, [status, session]);
 
-    // Função para buscar histórico usando o endpoint correto
-    const fetchChatHistory = async (otherUserId: string) => {
-        if (!session?.user?.accessToken || !otherUserId) return;
+        if (session) {
+            fetchUsers();
+        }
+    }, [session]);
+
+    // Função para buscar histórico do chat privado
+    const fetchChatHistory = async (otherUserId: string, channelId: string) => {
+        if (!session?.user?.accessToken || !otherUserId || !channelId) return;
         try {
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/chat/private/${otherUserId}`,
@@ -256,38 +108,40 @@ const PrivateUserChat = () => {
                 }
             );
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(
-                    errorData.message || "Erro ao buscar histórico do chat."
-                );
+                throw new Error("Erro ao buscar histórico do chat.");
             }
-            const messages: ChatMessageType[] = await response.json();
+            const messages: any[] = await response.json();
+            // Mapeia a resposta para o tipo correto e armazena no estado do PAI usando a CHAVE CORRETA (channelId)
             setPrivateChatMessages((prev) => ({
                 ...prev,
-                [otherUserId]: messages,
+                [channelId]: messages
+                    .map((msg) => ({
+                        userId: msg.senderUserId,
+                        user: msg.user,
+                        message: msg.message,
+                        createdAt: msg.createdAt,
+                        senderUserId: msg.senderUserId,
+                    }))
+                    .sort(
+                        (a, b) =>
+                            new Date(a.createdAt).getTime() -
+                            new Date(b.createdAt).getTime()
+                    ),
             }));
         } catch (error: any) {
             toast.error(error.message || "Erro ao buscar histórico do chat.");
-            console.error("Erro ao buscar histórico do chat:", error);
         }
     };
 
+    // Abre um chat privado, busca o canal e o histórico
     const handleOpenPrivateChat = async (userToChatWith: UserType) => {
-        if (
-            status !== "authenticated" ||
-            !session?.user?.accessToken ||
-            !session?.user?.id
-        ) {
+        if (!session?.user?.accessToken) {
             toast.error("Você precisa estar logado para iniciar um chat.");
-            return;
-        }
-        if (userToChatWith.id === session.user.id) {
-            toast.error("Você não pode iniciar um chat consigo mesmo.");
             return;
         }
 
         setSelectedPrivateChatUser(userToChatWith);
-        setCurrentPrivateChatChannel(null);
+        setCurrentPrivateChatChannel(null); // Reseta enquanto carrega
 
         try {
             const response = await fetch(
@@ -303,68 +157,33 @@ const PrivateUserChat = () => {
                     }),
                 }
             );
-
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(
-                    errorData.message || "Erro ao iniciar chat privado."
-                );
+                throw new Error("Erro ao iniciar chat privado.");
             }
-
             const chatChannelDetails: PrivateChatChannelDetails =
                 await response.json();
             setCurrentPrivateChatChannel(chatChannelDetails);
 
-            // Buscar histórico usando o endpoint correto
-            await fetchChatHistory(userToChatWith.id);
+            // Busca o histórico e armazena com a chave correta (ID do canal)
+            await fetchChatHistory(userToChatWith.id, chatChannelDetails.id);
         } catch (error: any) {
             toast.error(
                 error.message || "Não foi possível iniciar o chat privado."
             );
-            console.error("Erro ao iniciar chat privado:", error);
             setSelectedPrivateChatUser(null);
         }
     };
 
+    // Envia uma mensagem privada
     const handleSendPrivateMessage = async () => {
         if (
             !privateMessageInput.trim() ||
             !currentPrivateChatChannel?.id ||
             !selectedPrivateChatUser?.id
-        ) {
-            toast.error("Selecione um chat e digite uma mensagem.");
+        )
             return;
-        }
-        if (
-            !privateChatConnectionRef.current ||
-            privateChatConnectionRef.current.state !==
-                signalR.HubConnectionState.Connected
-        ) {
-            toast.error(
-                "Conexão de chat privado não está ativa. Tentando reconectar..."
-            );
-            try {
-                await privateChatConnectionRef.current?.start();
-                console.log(
-                    "SignalR (Privado) Reconnected for sending message."
-                );
-                if (
-                    privateChatConnectionRef.current?.state !==
-                    signalR.HubConnectionState.Connected
-                ) {
-                    toast.error("Falha ao reconectar ao chat privado.");
-                    return;
-                }
-            } catch (err) {
-                toast.error("Falha ao reconectar ao chat privado.");
-                console.error("SignalR (Privado) Reconnection Error: ", err);
-                return;
-            }
-        }
-        if (!session?.user?.id || !session?.user?.name) {
-            toast.error(
-                "Usuário não autenticado ou nome de usuário não disponível."
-            );
+        if (connection.state !== "Connected") {
+            toast.error("Conexão com o chat não está ativa.");
             return;
         }
 
@@ -372,79 +191,64 @@ const PrivateUserChat = () => {
         const messageToSend = privateMessageInput;
         setPrivateMessageInput("");
 
+        const optimisticCreatedAt = new Date().toISOString();
         try {
-            await privateChatConnectionRef.current.invoke(
+            // Atualização otimista da UI
+            const optimisticMessage: ChatMessageType = {
+                userId: session!.user!.id!,
+                user: "Eu",
+                message: messageToSend,
+                createdAt: optimisticCreatedAt,
+                senderUserId: session!.user!.id!,
+            };
+            setPrivateChatMessages((prev) => ({
+                ...prev,
+                [currentPrivateChatChannel.id]: [
+                    ...(prev[currentPrivateChatChannel.id] || []),
+                    optimisticMessage,
+                ],
+            }));
+
+            // Envia a mensagem para o servidor
+            await connection.invoke(
                 "SendPrivateMessage",
                 selectedPrivateChatUser.id,
                 messageToSend
             );
-
-            // Optimistic UI update - server will also send this message via "ReceivePrivateMessage"
-            // The "ReceivePrivateMessage" handler has logic to prevent exact duplicates.
-            const newMessageForSender: ChatMessageType = {
-                userId: session.user.id,
-                user: "Eu",
-                message: messageToSend,
-                createdAt: new Date().toISOString(),
-                senderUserId: session.user.id,
-            };
-
-            setPrivateChatMessages((prev) => {
-                const existingMessages =
-                    prev[currentPrivateChatChannel.id] || [];
-                // Check for duplicate before adding optimistically
-                if (
-                    existingMessages.some(
-                        (m) =>
-                            m.message === newMessageForSender.message &&
-                            m.senderUserId ===
-                                newMessageForSender.senderUserId &&
-                            Math.abs(
-                                new Date(m.createdAt!).getTime() -
-                                    new Date(
-                                        newMessageForSender.createdAt!
-                                    ).getTime()
-                            ) < 2000
-                    )
-                ) {
-                    // 2s threshold for optimistic
-                    return prev;
-                }
-                return {
-                    ...prev,
-                    [currentPrivateChatChannel.id]: [
-                        ...existingMessages,
-                        newMessageForSender,
-                    ].sort(
-                        (a, b) =>
-                            new Date(a.createdAt!).getTime() -
-                            new Date(b.createdAt!).getTime()
-                    ),
-                };
-            });
         } catch (err: any) {
             console.error("Erro ao enviar mensagem privada via SignalR: ", err);
             toast.error(
                 `Erro ao enviar: ${err.message || "Erro desconhecido"}`
             );
             setPrivateMessageInput(messageToSend);
+            // Reverte a atualização otimista em caso de falha
+            setPrivateChatMessages((prev) => {
+                const channelMessages =
+                    prev[currentPrivateChatChannel.id] || [];
+                return {
+                    ...prev,
+                    [currentPrivateChatChannel.id]: channelMessages.filter(
+                        (m) => m.createdAt !== optimisticCreatedAt
+                    ),
+                };
+            });
         } finally {
             setIsSendingPrivateMessage(false);
         }
     };
 
     useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [privateChatMessages, currentPrivateChatChannel]);
 
+    // Lógica de renderização
     const filteredUsers = users.filter((user) =>
         (user.name || "").toLowerCase().includes(userSearchQuery.toLowerCase())
     );
 
-    const currentMessagesForChannel = selectedPrivateChatUser
-        ? privateChatMessages[selectedPrivateChatUser.id] || []
+    // CORRIGIDO: Usa o ID do canal para buscar as mensagens corretas
+    const currentMessagesForChannel = currentPrivateChatChannel
+        ? privateChatMessages[currentPrivateChatChannel.id] || []
         : [];
 
     return (
@@ -460,7 +264,6 @@ const PrivateUserChat = () => {
                     <div className="px-6 pb-4">
                         <Input
                             placeholder="Pesquisar usuário..."
-                            className="w-full"
                             value={userSearchQuery}
                             onChange={(e) => setUserSearchQuery(e.target.value)}
                         />
@@ -469,7 +272,7 @@ const PrivateUserChat = () => {
                         <ScrollArea className="flex-1 p-6 pt-0">
                             {isLoadingUsers ? (
                                 <p className="text-center text-gray-500">
-                                    Carregando usuários...
+                                    Carregando...
                                 </p>
                             ) : filteredUsers.length > 0 ? (
                                 filteredUsers.map((user) => (
@@ -491,13 +294,10 @@ const PrivateUserChat = () => {
                                                 alt={user.name}
                                             />
                                             <AvatarFallback>
-                                                {(
-                                                    (user.firstName?.charAt(
-                                                        0
-                                                    ) || "") +
+                                                {(user.firstName?.charAt(0) ||
+                                                    "") +
                                                     (user.lastName?.charAt(0) ||
-                                                        "")
-                                                ).toUpperCase() || "U"}
+                                                        "") || "U"}
                                             </AvatarFallback>
                                         </Avatar>
                                         <span className="font-medium">
@@ -527,20 +327,16 @@ const PrivateUserChat = () => {
                                         alt={selectedPrivateChatUser.name}
                                     />
                                     <AvatarFallback>
-                                        {(
-                                            (selectedPrivateChatUser.firstName?.charAt(
-                                                0
-                                            ) || "") +
+                                        {(selectedPrivateChatUser.firstName?.charAt(
+                                            0
+                                        ) || "") +
                                             (selectedPrivateChatUser.lastName?.charAt(
                                                 0
-                                            ) || "")
-                                        ).toUpperCase() || "U"}
+                                            ) || "") || "U"}
                                     </AvatarFallback>
                                 </Avatar>
                                 <CardTitle>
-                                    {currentPrivateChatChannel.otherParticipant
-                                        .displayName ||
-                                        selectedPrivateChatUser.name}
+                                    {selectedPrivateChatUser.name}
                                 </CardTitle>
                             </div>
                             <Button
@@ -557,11 +353,7 @@ const PrivateUserChat = () => {
                         <ScrollArea className="flex-1 max-h-[60vh] p-4 space-y-4 bg-gray-50 dark:bg-gray-800">
                             {currentMessagesForChannel.map((msg, index) => (
                                 <div
-                                    key={
-                                        msg.createdAt
-                                            ? `${msg.senderUserId}-${msg.createdAt}-${index}`
-                                            : `${msg.message}-${index}`
-                                    }
+                                    key={`${msg.senderUserId}-${msg.createdAt}-${index}`}
                                     className={`flex ${
                                         msg.senderUserId === session?.user?.id
                                             ? "justify-end"
@@ -599,7 +391,7 @@ const PrivateUserChat = () => {
                             <div ref={messagesEndRef} />
                         </ScrollArea>
                         <CardContent className="p-4 border-t">
-                            <div className="flex items-center max-w-[50vw] gap-2">
+                            <div className="flex items-center gap-2">
                                 <Input
                                     placeholder="Digite sua mensagem..."
                                     value={privateMessageInput}
@@ -611,7 +403,7 @@ const PrivateUserChat = () => {
                                         !isSendingPrivateMessage &&
                                         handleSendPrivateMessage()
                                     }
-                                    className="flex-1 bg-[#3C6C0C] text-white placeholder:text-white"
+                                    className="flex-1"
                                     disabled={
                                         isSendingPrivateMessage ||
                                         !currentPrivateChatChannel
@@ -624,17 +416,17 @@ const PrivateUserChat = () => {
                                         !privateMessageInput.trim() ||
                                         !currentPrivateChatChannel
                                     }
-                                    className="w-[5vw] bg-[#3C6C0C] text-white rounded-lg"
                                 >
                                     <Send className="h-5 w-5" />
-                                    <span className=" sr-only">Enviar</span>
+                                    <span className="sr-only">Enviar</span>
                                 </Button>
                             </div>
                         </CardContent>
                     </Card>
                 ) : (
                     <EmptyWindow
-                        message="Selecione um usuário para iniciar uma conversa."
+                        title="Bate-papo Pessoal"
+                        message="Selecione um usuário da lista para iniciar uma conversa privada."
                         icon={<User className="h-16 w-16 text-gray-400" />}
                     />
                 )}
