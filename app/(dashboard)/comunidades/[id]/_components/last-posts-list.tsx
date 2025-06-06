@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import DeletePostButton from "./delete-post-button";
 import { getLastPosts } from "@/pages/api/post/get-last-posts";
-import { MoreHorizontal, ThumbsUp } from "lucide-react";
+import { Edit, MoreHorizontal, ThumbsUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
@@ -14,18 +14,25 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import EditPostButton from "./edit-post-button";
+import EditPostForm from "./edit-post-form";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Post {
     id: string;
-    createdBy: {
-        id: string;
-        name: string;
-        avatar: string;
-    };
     title: string;
     content: string;
     createdAt: string;
-    createdById: string;
+    firstName: string;
+    lastName: string;
+    role: string;
 }
 
 function getInitials(name: string) {
@@ -45,13 +52,23 @@ function timeAgo(dateString: string) {
     return date.toLocaleDateString();
 }
 
-export default function GetLastPosts() {
+interface GetLastPostsProps {
+    refreshTrigger?: any;
+}
+
+export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
     const session = useSession();
     const params = useParams();
     const feedId = params?.id as string;
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [editPost, setEditPost] = useState<null | {
+        postId: string;
+        groupId: string;
+        initialTitle: string;
+        initialContent: string;
+    }>(null);
 
     useEffect(() => {
         if (!feedId) return;
@@ -77,13 +94,13 @@ export default function GetLastPosts() {
         if (session.status === "authenticated") {
             fetchPosts();
         }
-    }, [feedId, session.status, session.data]);
+    }, [feedId, session.status, session.data, refreshTrigger]);
 
     return (
         <div className="bg-[#E3F2E6] min-h-[200px] rounded-[32px] p-6 flex flex-col gap-6">
             <Suspense fallback={<div>Carregando posts...</div>}>
                 {!loading && !error && (
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-6 px-16">
                         {posts.length > 0 ? (
                             posts.map((post) => (
                                 <div
@@ -96,14 +113,21 @@ export default function GetLastPosts() {
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-3">
                                                 {/* Avatar */}
-                                                <div className="w-12 h-12 rounded-full bg-[#B6E388] flex items-center justify-center text-xl font-bold text-[#234B0C] border-2 border-white shadow"></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs text-[#234B0C] mt-0.5">
-                                                        {timeAgo(
-                                                            post.createdAt
-                                                        )}
-                                                    </span>
+                                                <div className="w-10 h-10 rounded-full bg-[#FFE14D] flex items-center justify-center text-lg font-bold text-[#234B0C] border-2 border-white shadow">
+                                                    {getInitials(
+                                                        `${post.firstName} ${post.lastName}`
+                                                    )}
                                                 </div>
+                                                <span className="font-bold text-[#14290e] text-base mr-2">
+                                                    {post.firstName}{" "}
+                                                    {post.lastName}
+                                                </span>
+                                                <span className="bg-[#222] text-white text-xs font-semibold rounded-full px-3 py-1 mr-2">
+                                                    {post.role}
+                                                </span>
+                                                <span className="text-xs text-[#6CBF43] font-medium">
+                                                    {timeAgo(post.createdAt)}
+                                                </span>
                                             </div>
                                             {/* Opções */}
                                             <DropdownMenu>
@@ -115,6 +139,21 @@ export default function GetLastPosts() {
                                                     </button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent>
+                                                    <DropdownMenuItem asChild>
+                                                        <EditPostButton
+                                                            onClick={() =>
+                                                                setEditPost({
+                                                                    postId: post.id,
+                                                                    groupId:
+                                                                        feedId,
+                                                                    initialTitle:
+                                                                        post.title,
+                                                                    initialContent:
+                                                                        post.content,
+                                                                })
+                                                            }
+                                                        />
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem asChild>
                                                         <DeletePostButton
                                                             postId={post.id}
@@ -147,6 +186,38 @@ export default function GetLastPosts() {
                     </div>
                 )}
             </Suspense>
+            {/* Dialog de edição global */}
+            <Dialog
+                open={!!editPost}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setEditPost(null);
+                        setTimeout(() => {
+                            const safeButton =
+                                document.getElementById("safe-focus-button");
+                            if (safeButton) safeButton.focus();
+                        }, 0);
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Editar postagem</DialogTitle>
+                        <DialogDescription>
+                            Edite o título e conteúdo do post abaixo.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {editPost && (
+                        <EditPostForm
+                            postId={editPost.postId}
+                            groupId={editPost.groupId}
+                            initialTitle={editPost.initialTitle}
+                            initialContent={editPost.initialContent}
+                            onSuccess={() => setEditPost(null)}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

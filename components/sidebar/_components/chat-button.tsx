@@ -16,17 +16,19 @@ const ChatSection = () => {
     return (
         <Link
             href="/chat"
-            className={`w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center hover:bg-[#E7EFE854] ${
-                isActive ? "bg-[#3C6C0C]" : ""
+            className={`w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center hover:text-white hover:bg-[var(--active-sidebar-menu-background)] ${
+                isActive ? "bg-[var(--active-sidebar-menu-background)]" : ""
             }`}
         >
             <SidebarMenuItem>
                 <SidebarMenuButton asChild className="w-full">
-                    <div className={`flex items-center gap-2 ${isActive ? "text-white" : "text-primary"}`}>
+                    <div
+                        className={`flex items-center gap-2 ${
+                            isActive ? "text-white" : "text-primary"
+                        }`}
+                    >
                         <ChartAreaIcon className="size-8" />
-                        <span className="font-bold text-lg">
-                            MENSAGENS
-                        </span>
+                        <span className="font-bold text-lg">MENSAGENS</span>
                     </div>
                 </SidebarMenuButton>
             </SidebarMenuItem>

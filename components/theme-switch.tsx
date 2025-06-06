@@ -35,19 +35,19 @@ const ThemeSwitcher = () => {
                         <Sun
                             key="light"
                             //size={ICON_SIZE}
-                            className={"text-gray-400 size-[100%]"}
+                            className={"text-[#3C6C0C] size-[100%]"}
                         />
                     ) : theme === "dark" ? (
                         <Moon
                             key="dark"
                             //size={ICON_SIZE}
-                            className={"text-gray-400 size-[100%]"}
+                            className={"text-[#3C6C0C] size-[100%]"}
                         />
                     ) : (
                         <Laptop
                             key="system"
                             //size={ICON_SIZE}
-                            className={"text-gray-400 size-[100%]"}
+                            className={"text-[#3C6C0C] size-[100%]"}
                         />
                     )}
                 </Button>

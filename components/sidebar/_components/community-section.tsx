@@ -47,10 +47,10 @@ const CommunitySection = () => {
 
     return (
 
-        <Link href="/comunidades" className={`w-full h-[8vh] min-h-[60px] hover:bg-[#E7EFE854] ${
-            isActive ? "bg-[#3C6C0C]" : ""
+        <Link href="/comunidades" className={`w-full h-[8vh] min-h-[60px]  hover:bg-[var(--active-sidebar-menu-background)] ${
+            isActive ? "bg-[var(--active-sidebar-menu-background)] text-white": ""
         }`}>
-            <Collapsible className="group/collapsible w-full hover:bg-[#E7EFE854]">
+            <Collapsible className="group/collapsible w-full hover:bg-[var(--active-sidebar-menu-background)]">
                 {/* Trigger section (com altura fixa) */}
                 <SidebarGroup className="w-full">
                     <SidebarGroupLabel

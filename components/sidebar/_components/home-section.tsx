@@ -13,7 +13,7 @@ const HomeSection = () => {
     const isActive = pathname === "/descoberta";
 
     return (
-        <Link href="/descoberta" className={`w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center hover:bg-[#E7EFE854] ${isActive ? "bg-[#3C6C0C]" : ""}`}>
+        <Link href="/descoberta" className={`w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center ${isActive ? "bg-[var(--active-sidebar-menu-background)]" : ""}`}>
             <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                     <div className={`flex items-center gap-2 ${isActive ? "text-white" : "text-primary"}`}>

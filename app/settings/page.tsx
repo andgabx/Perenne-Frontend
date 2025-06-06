@@ -40,7 +40,7 @@ export default function SettingsPage() {
     return (
         <div className="min-h-screen bg-[url('/bg.png')] bg-cover bg-center">
             <SiteHeader />
-            <div className="container mx-auto p-6 max-w-[50vw] space-y-10">
+            <div className="container mx-auto p-6 md:w-[50vw] space-y-10">
                 <div className="hover:scale-105 transition-all duration-300">
                     <Link href="/settings/usersettings">
                         <UserMain />
@@ -53,6 +53,7 @@ export default function SettingsPage() {
                     </h1>
                     <LogoutUserButton />
                     <DeactivateButton />
+                    <div className="text-center text-sm xs:text-md sm:text-lg md:text-xl text-red-500 mt-4">Funcionalidade desativada durante avaliação.</div>
                 </Card>
             </div>
         </div>

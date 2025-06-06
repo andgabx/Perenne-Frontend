@@ -23,11 +23,11 @@ export function SiteHeader() {
 
                         <Link href="/settings">
                             {pathname === "/settings" ? (
-                                <Button variant="ghost" className="text-green-500 flex items-center hover:scale-105 transition-all duration-300 hover:animate-spin">
+                                <Button variant="ghost" className="text-[#3C6C0C] flex items-center hover:scale-105 transition-all duration-300 hover:animate-spin">
                                     <Settings className="size-[100%]" />
                                 </Button>
                             ) : (
-                                <Button variant="ghost" className="text-gray-400 flex items-center hover:scale-105 transition-all duration-300 hover:animate-spin">
+                                <Button variant="ghost" className="text-[#3C6C0C] flex items-center hover:scale-105 transition-all duration-300 hover:animate-spin">
                                     <Settings className="size-[100%]" />
                                 </Button>
                             )}

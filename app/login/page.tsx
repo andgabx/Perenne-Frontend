@@ -76,7 +76,7 @@ const Login = () => {
             <SiteHeader />
             <div className="flex min-h-[calc(100vh-var(--header-height))] items-center justify-center">
                 <Card className="rounded-2xl border-2 shadow-lg w-[90vw] md:w-[80vw] lg:w-[60vw] xl:w-[40vw] 2xl:w-[30vw] p-12">
-                    <h1 className="text-2xl font-bold text-center text-green-700 mb-6 uppercase">
+                    <h1 className="text-2xl font-bold text-center text-green-700 uppercase">
                         LOGIN
                     </h1>
                     <Separator className="my-6 w-full" />
