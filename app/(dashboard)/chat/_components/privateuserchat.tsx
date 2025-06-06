@@ -111,10 +111,11 @@ const PrivateUserChat = ({
                 throw new Error("Erro ao buscar histórico do chat.");
             }
             const messages: any[] = await response.json();
+
             // Mapeia a resposta para o tipo correto e armazena no estado do PAI usando a CHAVE CORRETA (channelId)
-            setPrivateChatMessages((prev) => ({
-                ...prev,
-                [channelId]: messages
+            setPrivateChatMessages((prev) => {
+                const existingMessages = prev[channelId] || [];
+                const newMessages = messages
                     .map((msg) => ({
                         userId: msg.senderUserId,
                         user: msg.user,
@@ -122,12 +123,26 @@ const PrivateUserChat = ({
                         createdAt: msg.createdAt,
                         senderUserId: msg.senderUserId,
                     }))
-                    .sort(
+                    .filter(
+                        (newMsg) =>
+                            !existingMessages.some(
+                                (existingMsg) =>
+                                    existingMsg.message === newMsg.message &&
+                                    existingMsg.senderUserId ===
+                                        newMsg.senderUserId &&
+                                    existingMsg.createdAt === newMsg.createdAt
+                            )
+                    );
+
+                return {
+                    ...prev,
+                    [channelId]: [...existingMessages, ...newMessages].sort(
                         (a, b) =>
-                            new Date(a.createdAt).getTime() -
-                            new Date(b.createdAt).getTime()
+                            new Date(a.createdAt || "").getTime() -
+                            new Date(b.createdAt || "").getTime()
                     ),
-            }));
+                };
+            });
         } catch (error: any) {
             toast.error(error.message || "Erro ao buscar histórico do chat.");
         }
@@ -201,13 +216,31 @@ const PrivateUserChat = ({
                 createdAt: optimisticCreatedAt,
                 senderUserId: session!.user!.id!,
             };
-            setPrivateChatMessages((prev) => ({
-                ...prev,
-                [currentPrivateChatChannel.id]: [
-                    ...(prev[currentPrivateChatChannel.id] || []),
-                    optimisticMessage,
-                ],
-            }));
+
+            setPrivateChatMessages((prev) => {
+                const channelMessages =
+                    prev[currentPrivateChatChannel.id] || [];
+                const messageExists = channelMessages.some(
+                    (m) =>
+                        m.message === messageToSend &&
+                        m.senderUserId === session!.user!.id! &&
+                        m.createdAt === optimisticCreatedAt
+                );
+
+                if (messageExists) return prev;
+
+                return {
+                    ...prev,
+                    [currentPrivateChatChannel.id]: [
+                        ...channelMessages,
+                        optimisticMessage,
+                    ].sort(
+                        (a, b) =>
+                            new Date(a.createdAt || "").getTime() -
+                            new Date(b.createdAt || "").getTime()
+                    ),
+                };
+            });
 
             // Envia a mensagem para o servidor
             await connection.invoke(
