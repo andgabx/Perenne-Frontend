@@ -190,26 +190,9 @@ const PrivateUserChat = ({
         setIsSendingPrivateMessage(true);
         const messageToSend = privateMessageInput;
         setPrivateMessageInput("");
-
-        const optimisticCreatedAt = new Date().toISOString();
+        
         try {
-            // Atualização otimista da UI
-            const optimisticMessage: ChatMessageType = {
-                userId: session!.user!.id!,
-                user: "Eu",
-                message: messageToSend,
-                createdAt: optimisticCreatedAt,
-                senderUserId: session!.user!.id!,
-            };
-            setPrivateChatMessages((prev) => ({
-                ...prev,
-                [currentPrivateChatChannel.id]: [
-                    ...(prev[currentPrivateChatChannel.id] || []),
-                    optimisticMessage,
-                ],
-            }));
-
-            // Envia a mensagem para o servidor
+            // CORREÇÃO: Removemos a atualização otimista.
             await connection.invoke(
                 "SendPrivateMessage",
                 selectedPrivateChatUser.id,
@@ -221,17 +204,7 @@ const PrivateUserChat = ({
                 `Erro ao enviar: ${err.message || "Erro desconhecido"}`
             );
             setPrivateMessageInput(messageToSend);
-            // Reverte a atualização otimista em caso de falha
-            setPrivateChatMessages((prev) => {
-                const channelMessages =
-                    prev[currentPrivateChatChannel.id] || [];
-                return {
-                    ...prev,
-                    [currentPrivateChatChannel.id]: channelMessages.filter(
-                        (m) => m.createdAt !== optimisticCreatedAt
-                    ),
-                };
-            });
+            // CORREÇÃO: Não precisamos mais reverter o estado.
         } finally {
             setIsSendingPrivateMessage(false);
         }
@@ -246,7 +219,7 @@ const PrivateUserChat = ({
         (user.name || "").toLowerCase().includes(userSearchQuery.toLowerCase())
     );
 
-    // CORRIGIDO: Usa o ID do canal para buscar as mensagens corretas
+    // Usa o ID do canal para buscar as mensagens corretas
     const currentMessagesForChannel = currentPrivateChatChannel
         ? privateChatMessages[currentPrivateChatChannel.id] || []
         : [];
@@ -372,7 +345,7 @@ const PrivateUserChat = ({
                                             {msg.senderUserId ===
                                             session?.user?.id
                                                 ? "Eu"
-                                                : selectedPrivateChatUser?.name}
+                                                : msg.user}
                                         </p>
                                         <p>{msg.message}</p>
                                         <p className="text-xs opacity-70 mt-1">

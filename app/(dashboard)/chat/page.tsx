@@ -82,12 +82,7 @@ export default function ChatPage() {
 
             // Handler para mensagens de GRUPO
             connection.on("ReceiveMessage", (channelId: string, user: string, message: string, createdAt: string, senderUserId: string) => {
-                // CORREÇÃO: Se a mensagem recebida for do próprio usuário, ignore-a.
-                // Ela já foi adicionada à tela por uma "atualização otimista".
-                if (senderUserId === session?.user.id) {
-                    return;
-                }
-
+                // CORREÇÃO: Agora processamos todas as mensagens, incluindo o eco.
                 if (currentChannelIdRef.current === channelId) {
                     setChatMessages((prevMessages) => {
                         const newMessage: ChatMessageType = { userId: senderUserId, user, message, createdAt, senderUserId };
@@ -100,11 +95,7 @@ export default function ChatPage() {
             connection.on("ReceivePrivateMessage", (payload: PrivateMessagePayload) => {
                 const { chatChannelId, senderId, senderDisplayName, message, createdAt } = payload;
                 
-                // CORREÇÃO: Se a mensagem recebida for do próprio usuário, ignore-a.
-                if (senderId === session?.user.id) {
-                    return;
-                }
-                
+                // CORREÇÃO: Agora processamos todas as mensagens, incluindo o eco.
                 const newMessage: ChatMessageType = {
                     userId: senderId,
                     user: senderDisplayName,
@@ -201,20 +192,13 @@ export default function ChatPage() {
 
         setIsSendingMessage(true);
         try {
-            const optimisticMessage: ChatMessageType = {
-                userId: session!.user.id!,
-                user: session!.user.name || "Eu",
-                message: message,
-                createdAt: new Date().toISOString(),
-                senderUserId: session!.user.id!,
-            };
-            setChatMessages((prev) => [...prev, optimisticMessage]);
-
+            // CORREÇÃO: Removemos a atualização otimista. A mensagem só aparece
+            // quando o servidor a envia de volta.
             await connection.invoke("SendMessage", channelId, message);
         } catch (err) {
             console.error("Erro ao enviar mensagem de GRUPO via SignalR: ", err);
             toast.error("Erro ao enviar mensagem.");
-            setChatMessages((prev) => prev.slice(0, -1)); // Remove a mensagem otimista
+            // CORREÇÃO: Não precisamos mais reverter o estado.
         } finally {
             setIsSendingMessage(false);
         }
