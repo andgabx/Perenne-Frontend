@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Users, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import { GroupType } from "../descoberta/grupo/_components/group-list-item";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import CommunityCard from "./_components/community-cards";
@@ -16,6 +15,7 @@ import * as signalR from "@microsoft/signalr";
 import type { ChatMessageType } from "./_components/chat-window";
 import EmptyWindow from "./_components/empty-window";
 import PrivateUserChat from "./_components/privateuserchat"; // Importando o componente de chat privado
+import { GroupType } from "../comunidades/_components/group-list-item";
 
 export default function ChatInterface() {
     const { data: session, status } = useSession();

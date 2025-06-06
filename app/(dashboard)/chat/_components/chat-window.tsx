@@ -2,13 +2,12 @@
 
 import { useState, FormEvent, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import type { GroupType } from "@/app/(dashboard)/descoberta/grupo/_components/group-list-item"; // Ensure this path is correct
 import { Send, X } from "lucide-react";
-import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Added AvatarFallback and AvatarImage
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Added AvatarFallback and AvatarImage
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { GroupType } from "../../comunidades/_components/group-list-item";
 
 export interface ChatMessage {
     userId: string; // ID of the user who created the message (senderUserId)

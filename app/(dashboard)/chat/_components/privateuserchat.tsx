@@ -499,7 +499,7 @@ const PrivateUserChat = () => {
             <div className="lg:col-span-1 flex flex-col h-full">
                 <Card className="h-full flex flex-col rounded-[20px] md:rounded-[40px]">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                        <CardTitle className="flex items-center py-4 gap-2">
                             <User className="h-5 w-5" /> Conversar com
                         </CardTitle>
                     </CardHeader>
@@ -600,7 +600,7 @@ const PrivateUserChat = () => {
                                 <X className="h-5 w-5" />
                             </Button>
                         </CardHeader>
-                        <ScrollArea className="flex-1 p-4 space-y-4 bg-gray-50 dark:bg-gray-800">
+                        <ScrollArea className="flex-1 max-h-[60vh] p-4 space-y-4 bg-gray-50 dark:bg-gray-800">
                             {currentMessagesForChannel.map((msg, index) => (
                                 <div
                                     key={
