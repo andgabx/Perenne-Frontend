@@ -23,7 +23,7 @@ import { usePathname } from "next/navigation";
 const CommunitySection = () => {
     const { data: session } = useSession();
     const [groups, setGroups] = useState<Group[]>([]);
-    
+
     const pathname = usePathname();
     const isActive = pathname === "/comunidades";
 
@@ -46,10 +46,14 @@ const CommunitySection = () => {
     }, [session]);
 
     return (
-
-        <Link href="/comunidades" className={`w-full h-[8vh] min-h-[60px]  hover:bg-[var(--active-sidebar-menu-background)] ${
-            isActive ? "bg-[var(--active-sidebar-menu-background)] text-white": ""
-        }`}>
+        <Link
+            href="/comunidades"
+            className={`w-full h-[8vh] min-h-[60px] flex hover:bg-[var(--active-sidebar-menu-background)] hover:text-white ${
+                isActive
+                    ? "bg-[var(--active-sidebar-menu-background)] text-white"
+                    : ""
+            }`}
+        >
             <Collapsible className="group/collapsible w-full hover:bg-[var(--active-sidebar-menu-background)]">
                 {/* Trigger section (com altura fixa) */}
                 <SidebarGroup className="w-full">
@@ -58,7 +62,11 @@ const CommunitySection = () => {
                         className="group/label text-sm text-sidebar-foreground"
                     >
                         <CollapsibleTrigger className="w-full h-[8vh] min-h-[60px] flex items-center">
-                            <div className={`flex items-center gap-2 w-full px-[3vw] ${isActive ? "text-white" : "text-primary"}`}>
+                            <div
+                                className={`flex items-center gap-2 w-full px-[3vw] ${
+                                    isActive ? "text-white" : "text-primary"
+                                } hover:text-white`}
+                            >
                                 <Handshake className="size-6 text-gray-400" />
                                 <span className="font-bold text-lg">
                                     COMUNIDADES

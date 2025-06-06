@@ -13,10 +13,21 @@ const HomeSection = () => {
     const isActive = pathname === "/descoberta";
 
     return (
-        <Link href="/descoberta" className={`w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center ${isActive ? "bg-[var(--active-sidebar-menu-background)]" : ""}`}>
+        <Link
+            href="/descoberta"
+            className={`w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center hover:bg-[var(--active-sidebar-menu-background)] hover:text-white ${
+                isActive
+                    ? "bg-[var(--active-sidebar-menu-background)] text-white"
+                    : ""
+            }`}
+        >
             <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                    <div className={`flex items-center gap-2 ${isActive ? "text-white" : "text-primary"}`}>
+                <SidebarMenuButton asChild className="hover:text-white">
+                    <div
+                        className={`flex items-center hover:text-white gap-2 ${
+                            isActive ? "text-white" : "text-primary"
+                        }`}
+                    >
                         <Image
                             src="/icons/home.svg"
                             alt="Home"
@@ -24,9 +35,7 @@ const HomeSection = () => {
                             height={24}
                             className="size-6"
                         />
-                        <span className="font-bold text-lg">
-                            INÍCIO
-                        </span>
+                        <span className="font-bold text-lg hover:text-white">INÍCIO</span>
                     </div>
                 </SidebarMenuButton>
             </SidebarMenuItem>

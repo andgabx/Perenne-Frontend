@@ -6,7 +6,7 @@ import { getHeaders } from "@/pages/api/headers";
 
 interface EditPostFormProps {
     postId: string;
-    groupId: string;
+    postIdString: string;
     initialTitle: string;
     initialContent: string;
     onSuccess?: () => void;
@@ -21,7 +21,7 @@ interface EditPostDTO {
 
 const EditPostForm = ({
     postId,
-    groupId,
+    postIdString,
     initialTitle,
     initialContent,
     onSuccess,
@@ -51,9 +51,9 @@ const EditPostForm = ({
                 ImageUrl: "",
             };
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/feed/${groupId}/editpost`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/feed/${postId}/editpost`,
                 {
-                    method: "POST",
+                    method: "PATCH",
                     headers: getHeaders(token),
                     body: JSON.stringify(dto),
                 }

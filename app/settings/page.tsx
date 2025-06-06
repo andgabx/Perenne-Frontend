@@ -47,7 +47,7 @@ export default function SettingsPage() {
                     </Link>
                 </div>
                 {/* <UserSettingsButton /> */}
-                <Card className="py-10">
+                <Card className="py-10 space-y-6">
                     <h1 className="text-sm xs:text-md sm:text-xl md:text-2xl break-words text-center font-black text-[#3C6C0C] pb-4">
                         SOBRE A CONTA
                     </h1>

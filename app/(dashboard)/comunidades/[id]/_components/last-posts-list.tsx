@@ -5,7 +5,13 @@ import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import DeletePostButton from "./delete-post-button";
 import { getLastPosts } from "@/pages/api/post/get-last-posts";
-import { Edit, MoreHorizontal, ThumbsUp } from "lucide-react";
+import {
+    Edit,
+    MoreHorizontal,
+    ThumbsUp,
+    Edit as EditIcon,
+    Trash2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
@@ -19,14 +25,17 @@ import EditPostButton from "./edit-post-button";
 import EditPostForm from "./edit-post-form";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import ReactDOM from "react-dom";
 
 interface Post {
     id: string;
+    idString: string;
     title: string;
     content: string;
     createdAt: string;
@@ -63,11 +72,16 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const [editPost, setEditPost] = useState<null | {
         postId: string;
-        groupId: string;
+        postIdString: string;
         initialTitle: string;
         initialContent: string;
+    }>(null);
+    const [deletePost, setDeletePost] = useState<null | {
+        postId: string;
+        groupId: string;
     }>(null);
 
     useEffect(() => {
@@ -130,7 +144,16 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
                                                 </span>
                                             </div>
                                             {/* Opções */}
-                                            <DropdownMenu>
+                                            <DropdownMenu
+                                                open={
+                                                    openDropdownId === post.id
+                                                }
+                                                onOpenChange={(open) => {
+                                                    setOpenDropdownId(
+                                                        open ? post.id : null
+                                                    );
+                                                }}
+                                            >
                                                 <DropdownMenuTrigger asChild>
                                                     <button className="p-2 rounded-full hover:bg-gray-100 text-[#234B0C]">
                                                         <MoreHorizontal
@@ -138,27 +161,41 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
                                                         />
                                                     </button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuItem asChild>
-                                                        <EditPostButton
-                                                            onClick={() =>
-                                                                setEditPost({
-                                                                    postId: post.id,
-                                                                    groupId:
-                                                                        feedId,
-                                                                    initialTitle:
-                                                                        post.title,
-                                                                    initialContent:
-                                                                        post.content,
-                                                                })
-                                                            }
-                                                        />
+                                                <DropdownMenuContent className="bg-white rounded-2xl p-2 shadow-lg border border-[#E3F2E6]">
+                                                    <DropdownMenuItem
+                                                        className="flex items-center gap-2 text-[#14290e] text-base font-bold w-full px-4 py-3 rounded-xl hover:bg-[#e2f0e4] cursor-pointer transition-all"
+                                                        onClick={() => {
+                                                            setOpenDropdownId(
+                                                                null
+                                                            );
+                                                            setEditPost({
+                                                                postId: post.id,
+                                                                postIdString:
+                                                                    post.idString,
+                                                                initialTitle:
+                                                                    post.title,
+                                                                initialContent:
+                                                                    post.content,
+                                                            });
+                                                        }}
+                                                    >
+                                                        <Edit size={18} />
+                                                        Editar
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <DeletePostButton
-                                                            postId={post.id}
-                                                            groupId={feedId}
-                                                        />
+                                                    <DropdownMenuItem
+                                                        className="flex items-center gap-2 text-[#14290e] text-base font-bold w-full px-4 py-3 rounded-xl hover:bg-[#e2f0e4] cursor-pointer transition-all"
+                                                        onClick={() => {
+                                                            setOpenDropdownId(
+                                                                null
+                                                            );
+                                                            setDeletePost({
+                                                                postId: post.id,
+                                                                groupId: feedId,
+                                                            });
+                                                        }}
+                                                    >
+                                                        <Trash2 size={18} />
+                                                        Deletar
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -210,12 +247,42 @@ export default function GetLastPosts({ refreshTrigger }: GetLastPostsProps) {
                     {editPost && (
                         <EditPostForm
                             postId={editPost.postId}
-                            groupId={editPost.groupId}
+                            postIdString={editPost.postIdString}
                             initialTitle={editPost.initialTitle}
                             initialContent={editPost.initialContent}
                             onSuccess={() => setEditPost(null)}
                         />
                     )}
+                </DialogContent>
+            </Dialog>
+            {/* Dialog de deleção */}
+            <Dialog
+                open={!!deletePost}
+                onOpenChange={(open) => {
+                    if (!open) setDeletePost(null);
+                }}
+            >
+                <DialogContent className="bg-white w-[30vw]">
+                    <DialogHeader>
+                        <DialogTitle>Deletar postagem</DialogTitle>
+                        <DialogDescription>
+                            Tem certeza que deseja deletar esta postagem?
+                        </DialogDescription>
+                    </DialogHeader>
+                    {deletePost && (
+                        <DeletePostButton
+                            postId={deletePost.postId}
+                            groupId={deletePost.groupId}
+                        />
+                    )}
+                    <DialogClose asChild>
+                        <Button
+                            className="bg-[#FFB800] text-[#234B0C] font-extrabold text-lg rounded-xl px-8 py-2 border-2 border-[#FFB800] shadow-none hover:bg-[#ffc72c] hover:text-[#234B0C] transition-all"
+                            type="button"
+                        >
+                            Cancelar
+                        </Button>
+                    </DialogClose>
                 </DialogContent>
             </Dialog>
         </div>

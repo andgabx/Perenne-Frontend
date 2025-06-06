@@ -46,7 +46,7 @@ const CreateSection = () => {
             {canCreate ? (
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
                     <DialogTrigger asChild>
-                        <div className="w-full h-[8vh] min-h-[60px] px-[3vw] hover:bg-[#E7EFE854] flex items-center cursor-pointer">
+                        <div className="w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center cursor-pointer">
                             <SidebarMenuButton asChild>
                                 <div>
                                     <Plus className="size-6 text-gray-400" />

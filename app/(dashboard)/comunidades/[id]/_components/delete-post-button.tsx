@@ -14,7 +14,6 @@ import { useSession } from "next-auth/react";
 import { deletePost } from "@/pages/api/post/delete";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 const DeletePostButton = ({
     postId,
@@ -45,26 +44,45 @@ const DeletePostButton = ({
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <DropdownMenuItem className="text-center text-[#234B0C] font-bold">
-                    <Trash2 className="w-4 h-4" />
-                    Deletar
-                </DropdownMenuItem>
+                <Button
+                    variant="ghost"
+                    className="bg-[#FFB800] text-center text-lg text-[#234B0C] w-full font-bold rounded-xl px-8 py-2 border-2 border-[#FFB800] shadow-none hover:bg-[#ffc72c] hover:text-[#234B0C] transition-all"
+                >
+                    Prosseguir
+                </Button>
             </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Tem certeza?</DialogTitle>
+            <DialogContent className="bg-white w-[90vw] max-w-xl rounded-3xl p-8">
+                <DialogHeader className="items-center">
+                    <DialogTitle asChild>
+                        <h2 className="text-[#234B0C] text-2xl md:text-3xl font-extrabold text-center uppercase tracking-wide">
+                            EXCLUIR PUBLICAÇÃO
+                        </h2>
+                    </DialogTitle>
                 </DialogHeader>
-                <DialogDescription>
-                    Você tem certeza que deseja deletar esta postagem? Todos os
-                    dados serão apagados!
+                <div className="w-full h-px bg-[#234B0C] opacity-40 my-2" />
+                <DialogDescription asChild>
+                    <div className="text-center text-black text-xl font-normal mt-6 mb-8">
+                        Tem certeza que deseja excluir esta publicação?
+                        <br />
+                        Essa ação não pode ser desfeita.
+                    </div>
                 </DialogDescription>
-                <DialogFooter>
-                    <Button variant="destructive" onClick={handleDelete}>
-                        Deletar
-                    </Button>
+                <DialogFooter className="flex flex-row gap-4 justify-center mt-4">
                     <DialogClose asChild>
-                        <Button variant="outline">Cancelar</Button>
+                        <Button
+                            className="bg-[#FFB800] text-[#234B0C] font-extrabold text-lg rounded-xl px-8 py-2 border-2 border-[#FFB800] shadow-none hover:bg-[#ffc72c] hover:text-[#234B0C] transition-all"
+                            type="button"
+                        >
+                            Cancelar
+                        </Button>
                     </DialogClose>
+                    <Button
+                        onClick={handleDelete}
+                        className="bg-white text-[#234B0C] font-extrabold text-lg rounded-xl px-8 py-2 border-2 border-[#FFB800] shadow-none hover:bg-[#FFB800] hover:text-[#234B0C] transition-all"
+                        type="button"
+                    >
+                        Excluir
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

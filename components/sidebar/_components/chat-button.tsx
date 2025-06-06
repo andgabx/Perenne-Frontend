@@ -16,8 +16,10 @@ const ChatSection = () => {
     return (
         <Link
             href="/chat"
-            className={`w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center hover:text-white hover:bg-[var(--active-sidebar-menu-background)] ${
-                isActive ? "bg-[var(--active-sidebar-menu-background)]" : ""
+            className={`w-full h-[8vh] min-h-[60px] px-[3vw] flex items-center hover:bg-[var(--active-sidebar-menu-background)] hover:text-white ${
+                isActive
+                    ? "bg-[var(--active-sidebar-menu-background)] text-white"
+                    : ""
             }`}
         >
             <SidebarMenuItem>
@@ -25,7 +27,7 @@ const ChatSection = () => {
                     <div
                         className={`flex items-center gap-2 ${
                             isActive ? "text-white" : "text-primary"
-                        }`}
+                        } hover:text-white`}
                     >
                         <ChartAreaIcon className="size-8" />
                         <span className="font-bold text-lg">MENSAGENS</span>

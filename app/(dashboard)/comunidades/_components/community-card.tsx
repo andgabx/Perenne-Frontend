@@ -170,21 +170,14 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
                         className="relative cursor-pointer group transform hover:scale-105 transition-transform duration-200"
                         onClick={() => setSelectedCommunity(community.id)}
                     >
-                        {/* Elemento de fundo verde (sombra) com largura ajustada */}
-                        <div
-                            className={cn(
-                                "absolute top-0 bottom-0 left-[0.5vw] right-[0.5vw] md:left-[0.1vw] md:right-[0.1vw] bg-[#24BD0A] rounded-b-[44px] rounded-t-[55px] translate-y-[0.3vh] group-hover:translate-y-[0.75vh] transition-transform duration-200",
-                                "filter blur-xs opacity-100"
-                            )}
-                        />
-                        {/* Card principal com nova cor de fundo e arredondamento e altura ajustados */}
+                     
                         <div
                             className={cn(
                                 "relative bg-[#F4F7F5] rounded-b-[48px] rounded-t-[40px] overflow-hidden flex flex-col"
                             )}
                         >
                             {/* Retângulo da "imagem" com arredondamento uniforme e dimensões vw/vh */}
-                            <div className="bg-[#FCB201] rounded-t-[20px] rounded-b-[20px] h-[20vh] md:h-[22vh] flex items-center justify-center mx-[2.5vw] md:mx-[1vw]"></div>
+                            <div className="bg-[#FCB201] bg-[url('/svgcard.svg')] bg-cover bg-center rounded-t-[20px] rounded-b-[20px] h-[20vh] md:h-[20vh] translate-y-[1vh] group-hover:translate-y-[0.75vh] transition-transform duration-200 flex items-center justify-center mx-[2.5vw] md:mx-[1vw]"></div>
                             {/* Nome da comunidade com padding inferior aumentado para aumentar o comprimento do card e nova cor */}
                             <div className="pt-[2vh] pb-[4vh] px-[1vw] text-center flex-grow flex flex-col justify-center">
                                 {/* Padding vertical em vh, horizontal em vw */}
