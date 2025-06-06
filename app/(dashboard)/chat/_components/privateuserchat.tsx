@@ -245,14 +245,12 @@ const PrivateUserChat = () => {
         };
     }, [status, session]);
 
-    const fetchChatHistory = async (
-        channelId: string,
-        otherParticipantName: string
-    ) => {
-        if (!session?.user?.accessToken || !channelId) return;
+    // Função para buscar histórico usando o endpoint correto
+    const fetchChatHistory = async (otherUserId: string) => {
+        if (!session?.user?.accessToken || !otherUserId) return;
         try {
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/chat/private/${channelId}/messages/50`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/chat/private/${otherUserId}`,
                 {
                     headers: getHeaders(session.user.accessToken),
                 }
@@ -264,22 +262,9 @@ const PrivateUserChat = () => {
                 );
             }
             const messages: ChatMessageType[] = await response.json();
-
             setPrivateChatMessages((prev) => ({
                 ...prev,
-                [channelId]: messages
-                    .map((m) => ({
-                        ...m,
-                        user:
-                            m.senderUserId === session?.user?.id
-                                ? "Eu"
-                                : otherParticipantName || m.senderUserId || "",
-                    }))
-                    .sort(
-                        (a, b) =>
-                            new Date(a.createdAt!).getTime() -
-                            new Date(b.createdAt!).getTime()
-                    ),
+                [otherUserId]: messages,
             }));
         } catch (error: any) {
             toast.error(error.message || "Erro ao buscar histórico do chat.");
@@ -330,39 +315,8 @@ const PrivateUserChat = () => {
                 await response.json();
             setCurrentPrivateChatChannel(chatChannelDetails);
 
-            if (chatChannelDetails && chatChannelDetails.id) {
-                if (!privateChatMessages[chatChannelDetails.id]?.length) {
-                    await fetchChatHistory(
-                        chatChannelDetails.id,
-                        chatChannelDetails.otherParticipant.displayName
-                    );
-                } else {
-                    setPrivateChatMessages((prev) => ({
-                        ...prev,
-                        [chatChannelDetails.id]: (
-                            prev[chatChannelDetails.id] || []
-                        )
-                            .map((m) => ({
-                                ...m,
-                                user:
-                                    m.senderUserId === session?.user?.id
-                                        ? "Eu"
-                                        : chatChannelDetails.otherParticipant
-                                              .displayName ||
-                                          m.senderUserId ||
-                                          "",
-                            }))
-                            .sort(
-                                (a, b) =>
-                                    new Date(a.createdAt!).getTime() -
-                                    new Date(b.createdAt!).getTime()
-                            ),
-                    }));
-                }
-            }
-            console.log(
-                `Chat privado com ${userToChatWith.name} (ID: ${userToChatWith.id}) iniciado. Channel ID: ${chatChannelDetails?.id}`
-            );
+            // Buscar histórico usando o endpoint correto
+            await fetchChatHistory(userToChatWith.id);
         } catch (error: any) {
             toast.error(
                 error.message || "Não foi possível iniciar o chat privado."
@@ -489,8 +443,8 @@ const PrivateUserChat = () => {
         (user.name || "").toLowerCase().includes(userSearchQuery.toLowerCase())
     );
 
-    const currentMessagesForChannel = currentPrivateChatChannel?.id
-        ? privateChatMessages[currentPrivateChatChannel.id] || []
+    const currentMessagesForChannel = selectedPrivateChatUser
+        ? privateChatMessages[selectedPrivateChatUser.id] || []
         : [];
 
     return (
@@ -623,7 +577,10 @@ const PrivateUserChat = () => {
                                         }`}
                                     >
                                         <p className="text-sm font-semibold mb-1">
-                                            {msg.user}
+                                            {msg.senderUserId ===
+                                            session?.user?.id
+                                                ? "Eu"
+                                                : selectedPrivateChatUser?.name}
                                         </p>
                                         <p>{msg.message}</p>
                                         <p className="text-xs opacity-70 mt-1">
@@ -670,9 +627,7 @@ const PrivateUserChat = () => {
                                     className="w-[5vw] bg-[#3C6C0C] text-white rounded-lg"
                                 >
                                     <Send className="h-5 w-5" />
-                                    <span className=" sr-only">
-                                        Enviar
-                                    </span>
+                                    <span className=" sr-only">Enviar</span>
                                 </Button>
                             </div>
                         </CardContent>

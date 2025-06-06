@@ -34,6 +34,7 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
     const [isLoadingAllGroups, setIsLoadingAllGroups] = useState(false);
     const [isLoadingMyGroups, setIsLoadingMyGroups] = useState(false);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [refreshGroups, setRefreshGroups] = useState(0);
 
     useEffect(() => {
         if (!session) {
@@ -106,7 +107,7 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
         };
         fetchAllGroups();
         fetchMyGroups();
-    }, [session]);
+    }, [session, refreshGroups]);
 
     const groupsToShow = allGroups.filter(
         (ag) => !myGroups.some((mg) => mg.id === ag.id)
@@ -164,32 +165,31 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-4 gap-4">
                 {/* Espaçamento da grade */}
                 {myGroups.map((community) => (
-                    <Link href={`/comunidades/${community.id}`} key={community.id}>
-                    <div
+                    <Link
+                        href={`/comunidades/${community.id}`}
                         key={community.id}
-                        className="relative cursor-pointer group transform hover:scale-105 transition-transform duration-200"
-                        onClick={() => setSelectedCommunity(community.id)}
                     >
-                     
                         <div
-                            className={cn(
-                                "relative bg-[#F4F7F5] rounded-b-[48px] rounded-t-[40px] overflow-hidden flex flex-col"
-                            )}
+                            key={community.id}
+                            className="relative cursor-pointer group transform hover:scale-105 transition-transform duration-200"
+                            onClick={() => setSelectedCommunity(community.id)}
                         >
-                            {/* Retângulo da "imagem" com arredondamento uniforme e dimensões vw/vh */}
-                            <div className="bg-[#FCB201] bg-[url('/svgcard.svg')] bg-cover bg-center rounded-t-[20px] rounded-b-[20px] h-[20vh] md:h-[20vh] translate-y-[1vh] group-hover:translate-y-[0.75vh] transition-transform duration-200 flex items-center justify-center mx-[2.5vw] md:mx-[1vw]"></div>
-                            {/* Nome da comunidade com padding inferior aumentado para aumentar o comprimento do card e nova cor */}
-                            <div className="pt-[2vh] pb-[4vh] px-[1vw] text-center flex-grow flex flex-col justify-center">
-                                {/* Padding vertical em vh, horizontal em vw */}
-                                <h4
-                                    className="text-[#24BD0A] break-words uppercase font-['BN_Bobbie_Sans'] text-[1.8vw] md:text-[1.5vw] lg:text-[1.2vw] font-normal"
-                                    
-                                >
-                                    {community.name}
-                                </h4>
+                            <div
+                                className={cn(
+                                    "relative bg-[#F4F7F5] rounded-b-[48px] rounded-t-[40px] overflow-hidden flex flex-col"
+                                )}
+                            >
+                                {/* Retângulo da "imagem" com arredondamento uniforme e dimensões vw/vh */}
+                                <div className="bg-[#FCB201] bg-[url('/svgcard.svg')] bg-cover bg-center rounded-t-[20px] rounded-b-[20px] h-[20vh] md:h-[20vh] translate-y-[1vh] group-hover:translate-y-[0.75vh] transition-transform duration-200 flex items-center justify-center mx-[2.5vw] md:mx-[1vw]"></div>
+                                {/* Nome da comunidade com padding inferior aumentado para aumentar o comprimento do card e nova cor */}
+                                <div className="pt-[2vh] pb-[4vh] px-[1vw] text-center flex-grow flex flex-col justify-center">
+                                    {/* Padding vertical em vh, horizontal em vw */}
+                                    <h4 className="text-[#24BD0A] break-words uppercase font-['BN_Bobbie_Sans'] text-[1.8vw] md:text-[1.5vw] lg:text-[1.2vw] font-normal">
+                                        {community.name}
+                                    </h4>
+                                </div>
                             </div>
                         </div>
-                    </div>
                     </Link>
                 ))}
                 {/* Card de criar comunidade */}
@@ -212,6 +212,11 @@ const StyledCommunityGrid: React.FC<StyledCommunityGridProps> = ({
                                 ADICIONAR COMUNIDADES
                             </DialogTitle>
                         </DialogHeader>
+                        <CreateGroupForm
+                            isLoading={false}
+                            token={session?.user?.accessToken || ""}
+                            onSuccess={() => setRefreshGroups((v) => v + 1)}
+                        />
                         <GroupList
                             title="Grupos Disponíveis (Entrar no Grupo)"
                             groups={groupsToShow.map((g) => ({
